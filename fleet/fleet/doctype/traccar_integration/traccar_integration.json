@@ -1,0 +1,135 @@
+{
+	"actions": [],
+	"creation": "2024-11-01 09:02:44.862385",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"integration_tab",
+		"enable_traccar",
+		"server_info_section",
+		"traccar_server_url",
+		"encoded_credentials",
+		"column_break_ewch",
+		"username",
+		"password",
+		"notifications_tab",
+		"notification_settings_section",
+		"external_battery_low_threshold",
+		"frequency_tab",
+		"gps_poll_frequency",
+		"column_break_awnn",
+		"odometer_poll_frequency"
+	],
+	"fields": [
+		{
+			"fieldname": "server_info_section",
+			"fieldtype": "Section Break",
+			"label": "Server Info"
+		},
+		{
+			"default": "0",
+			"fieldname": "enable_traccar",
+			"fieldtype": "Check",
+			"label": "Enable Traccar"
+		},
+		{
+			"fieldname": "traccar_server_url",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Traccar Server URL",
+			"reqd": 1
+		},
+		{
+			"fieldname": "username",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Username",
+			"reqd": 1
+		},
+		{
+			"fieldname": "password",
+			"fieldtype": "Password",
+			"in_list_view": 1,
+			"label": "Password",
+			"reqd": 1
+		},
+		{
+			"fieldname": "encoded_credentials",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "Encoded Credentials",
+			"no_copy": 1
+		},
+		{
+			"fieldname": "notification_settings_section",
+			"fieldtype": "Section Break",
+			"label": "Notification Settings"
+		},
+		{
+			"fieldname": "external_battery_low_threshold",
+			"fieldtype": "Float",
+			"label": "External Battery Low Threshold",
+			"precision": "1"
+		},
+		{
+			"fieldname": "column_break_ewch",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "integration_tab",
+			"fieldtype": "Tab Break",
+			"label": "Integration"
+		},
+		{
+			"fieldname": "notifications_tab",
+			"fieldtype": "Tab Break",
+			"label": "Notifications"
+		},
+		{
+			"fieldname": "frequency_tab",
+			"fieldtype": "Tab Break",
+			"label": "Frequency"
+		},
+		{
+			"description": "<pre>*  *  *  *  *\n\u252c  \u252c  \u252c  \u252c  \u252c\n\u2502  \u2502  \u2502  \u2502  \u2502\n\u2502  \u2502  \u2502  \u2502  \u2514 day of week (0 - 6) (0 is Sunday)\n\u2502  \u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500 month (1 - 12)\n\u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 day of month (1 - 31)\n\u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 hour (0 - 23)\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 minute (0 - 59)\n\n--- <a target=\"_blank\" href=\"crontab.guru\">crontab format reference</a>\n</pre>",
+			"fieldname": "gps_poll_frequency",
+			"fieldtype": "Data",
+			"label": "GPS Poll Frequency"
+		},
+		{
+			"fieldname": "column_break_awnn",
+			"fieldtype": "Column Break"
+		},
+		{
+			"description": "<pre>*  *  *  *  *\n\u252c  \u252c  \u252c  \u252c  \u252c\n\u2502  \u2502  \u2502  \u2502  \u2502\n\u2502  \u2502  \u2502  \u2502  \u2514 day of week (0 - 6) (0 is Sunday)\n\u2502  \u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500 month (1 - 12)\n\u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 day of month (1 - 31)\n\u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 hour (0 - 23)\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 minute (0 - 59)\n\n--- <a target=\"_blank\" href=\"crontab.guru\">crontab format reference</a>\n</pre>",
+			"fieldname": "odometer_poll_frequency",
+			"fieldtype": "Data",
+			"label": "Odometer Poll Frequency"
+		}
+	],
+	"issingle": 1,
+	"links": [],
+	"modified": "2024-11-13 18:09:29.159478",
+	"modified_by": "Administrator",
+	"module": "Fleet",
+	"name": "Traccar Integration",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"delete": 1,
+			"read": 1,
+			"role": "System Manager",
+			"write": 1
+		},
+		{
+			"read": 1,
+			"role": "Fleet Manager",
+			"write": 1
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": [],
+	"track_changes": 1
+}
