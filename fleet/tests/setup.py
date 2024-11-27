@@ -18,7 +18,7 @@ def before_test(company_name=None):
 			"full_name": "Administrator",
 			"company_name": "Quincy Cloudberry Farm",
 			"timezone": "America/New_York",
-			"company_abbr": "APC",
+			"company_abbr": "QCF",
 			"domains": ["Distribution"],
 			"country": "United States",
 			"fy_start_date": today.replace(month=1, day=1).isoformat(),
@@ -459,3 +459,15 @@ def create_employees(settings, employees):
 		else:
 			shift.shift_type = shift_type[0]
 		shift.save()
+
+
+def create_vehicles():
+	# box truck, pickup truck, tractor, utv
+	# generate vin and traccar IMEI
+	pass
+
+
+def create_locations():
+	# state parks or forests in New Hampshire
+	#
+	pass

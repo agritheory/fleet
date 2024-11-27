@@ -8,6 +8,7 @@ version =  "15.0.0"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
+test_utils = { git = "https://github.com/agritheory/test_utils.git" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"

@@ -1,6 +1,7 @@
 {
 	"actions": [],
 	"allow_rename": 1,
+	"autoname": "field:state",
 	"creation": "2024-11-13 17:29:31.890067",
 	"doctype": "DocType",
 	"engine": "InnoDB",
@@ -10,7 +11,8 @@
 			"fieldname": "state",
 			"fieldtype": "Data",
 			"label": "State",
-			"read_only": 1
+			"read_only": 1,
+			"unique": 1
 		},
 		{
 			"fieldname": "column_break_ovao",
@@ -31,10 +33,11 @@
 	],
 	"index_web_pages_for_search": 1,
 	"links": [],
-	"modified": "2024-11-13 17:43:23.511305",
+	"modified": "2024-11-26 22:32:21.493847",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "State",
+	"naming_rule": "Expression (old style)",
 	"owner": "Administrator",
 	"permissions": [
 		{
