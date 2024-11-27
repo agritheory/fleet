@@ -4,7 +4,7 @@ authors = ["AgriTheory <support@agritheory.com>"]
 description = "Fleet Management Tools for ERPNext"
 requires-python = ">=3.10"
 readme = "README.md"
-version =  "15.0.0"
+version =  "0.1.0"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
