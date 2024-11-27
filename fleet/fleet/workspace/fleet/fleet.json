@@ -1,8 +1,17 @@
 {
 	"charts": [],
-	"content": "[{\"type\":\"header\",\"data\":{\"text\":\"Fleet\"}}]",
+	"content": "[{\"id\":\"M6BgSm13Kd\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Vehicle Map\",\"col\":12}},{\"id\":\"5FVaN_7leD\",\"type\":\"card\",\"data\":{\"card_name\":\"Fleet\",\"col\":3}},{\"id\":\"Rn8ppwkzAd\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Vehicle Battery Voltage\",\"col\":3}}]",
 	"creation": "2024-11-13 18:23:20.509684",
-	"custom_blocks": [],
+	"custom_blocks": [
+		{
+			"custom_block_name": "Vehicle Map",
+			"label": "Vehicle Map"
+		},
+		{
+			"custom_block_name": "Vehicle Battery Voltage",
+			"label": "Vehicle Battery Voltage"
+		}
+	],
 	"docstatus": 0,
 	"doctype": "Workspace",
 	"for_user": "",
@@ -11,8 +20,58 @@
 	"indicator_color": "green",
 	"is_hidden": 0,
 	"label": "Fleet",
-	"links": [],
-	"modified": "2024-11-13 18:25:21.657246",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Fleet",
+			"link_count": 4,
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Vehicle",
+			"link_count": 0,
+			"link_to": "Vehicle",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Driver",
+			"link_count": 0,
+			"link_to": "Driver",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Trailer",
+			"link_count": 0,
+			"link_to": "Trailer",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Location",
+			"link_count": 0,
+			"link_to": "Location",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		}
+	],
+	"modified": "2024-11-26 19:27:58.817489",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "Fleet",

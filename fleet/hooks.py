@@ -1,8 +1,11 @@
+# Copyright (c) 2024, AgriTheory and contributors
+# For license information, please see license.txt
+
 app_name = "fleet"
 app_title = "Fleet"
 app_publisher = "AgriTheory"
 app_description = "Fleet Management Tools for ERPNext"
-app_email = "suport@agritheory.com"
+app_email = "support@agritheory.com"
 app_license = "mit"
 
 # Apps
@@ -83,7 +86,7 @@ app_license = "mit"
 # ------------
 
 # before_install = "fleet.install.before_install"
-# after_install = "fleet.install.after_install"
+after_install = "fleet.install.after_install"
 
 # Uninstallation
 # ------------
@@ -241,4 +244,3 @@ app_license = "mit"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-
