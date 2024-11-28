@@ -3,11 +3,16 @@
 
 
 import frappe
+from frappe.utils.data import get_first_day, get_last_day
 
 
 @frappe.whitelist()
-def get_events(doctype, start, end, field_map, filters=None, fields=None):
+def get_events(doctype, start=None, end=None, field_map=None, filters=None, fields=None):
 	events = []
+	if not start:
+		start = get_first_day()
+	if not end:
+		end = get_last_day()
 	vehicles = frappe.get_list(
 		"Vehicle", ["name", "registration_expiration_date AS date", "end_date"]
 	)  # TODO add inspection date
