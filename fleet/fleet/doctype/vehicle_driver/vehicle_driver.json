@@ -1,0 +1,29 @@
+{
+	"actions": [],
+	"allow_rename": 1,
+	"creation": "2024-11-27 15:46:47.301047",
+	"doctype": "DocType",
+	"editable_grid": 1,
+	"engine": "InnoDB",
+	"field_order": ["driver"],
+	"fields": [
+		{
+			"fieldname": "driver",
+			"fieldtype": "Link",
+			"label": "Driver",
+			"options": "Driver"
+		}
+	],
+	"index_web_pages_for_search": 1,
+	"istable": 1,
+	"links": [],
+	"modified": "2024-11-27 15:47:06.205379",
+	"modified_by": "Administrator",
+	"module": "Fleet",
+	"name": "Vehicle Driver",
+	"owner": "Administrator",
+	"permissions": [],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": []
+}

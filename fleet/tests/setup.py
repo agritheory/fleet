@@ -469,5 +469,8 @@ def create_vehicles():
 
 def create_locations():
 	# state parks or forests in New Hampshire
-	#
+	pass
+
+
+def create_vehicle_logs():
 	pass
