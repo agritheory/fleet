@@ -1,7 +1,7 @@
 // Copyright (c) 2024, AgriTheory and contributors
 // For license information, please see license.txt
 
-frappe.views.calendar['Vehicle'] = {
+const fleet_calendar = {
 	field_map: {
 		start: 'date',
 		end: 'date',
@@ -40,8 +40,17 @@ frappe.views.calendar['Vehicle'] = {
 			return 'warning'
 		}
 	},
+	gantt: false,
 	options: {
 		editable: false,
 		selectable: false,
 	},
+}
+
+frappe.views.calendar['Vehicle'] = {
+	...fleet_calendar,
+}
+
+frappe.views.calendar['Driver'] = {
+	...fleet_calendar,
 }
