@@ -1,11 +1,13 @@
 # Copyright (c) 2024, AgriTheory and contributors
 # For license information, please see license.txt
+from pathlib import Path
+import json
 
 import unicodedata
 
 import frappe
 from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
-
+from frappe.utils.data import getdate
 from test_utils.utils.chart_of_accounts import setup_chart_of_accounts
 
 
@@ -57,7 +59,6 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	settings.company_account = frappe.get_value(
 		"Account", {"account_type": "Bank", "company": company_name, "is_group": 0}
 	)
-	create_bank_and_bank_account(settings)
 	setup_farm_price_list()
 	create_farm_shifts()
 	company_address = frappe.new_doc("Address")
@@ -74,62 +75,8 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	co.tax_id = "04-9000561"
 	co.domain = "quincycloudberry.farm"
 	co.save()
-
 	create_farm_employees()
 	setup_farm_price_list()
-
-
-def create_bank_and_bank_account(settings):
-	abbr = frappe.get_value("Company", settings.company, "abbr")
-	if not frappe.db.exists("Bank", "Local Bank"):
-		bank = frappe.new_doc("Bank")
-		bank.bank_name = "Local Bank"
-		bank.aba_number = "07200091"
-		bank.save()
-	else:
-		bank = frappe.get_doc("Bank", "Local Bank")
-
-	if not frappe.db.exists("Bank Account", f"{abbr} Primary Checking - Local Bank"):
-		bank_account = frappe.new_doc("Bank Account")
-		bank_account.account_name = f"{abbr} Primary Checking"
-		bank_account.bank = bank.name
-		bank_account.is_default = 1
-		bank_account.is_company_account = 1
-		bank_account.company = settings.company
-		bank_account.account = settings.company_account
-		bank_account.check_number = 2500
-		bank_account.company_ach_id = "1381655416"
-		bank_account.bank_account_no = "072000916"
-		bank_account.branch_code = "07200091"
-		bank_account.save()
-
-	default_cost_center = frappe.get_value("Company", settings.company, "cost_center")
-	doc = frappe.new_doc("Journal Entry")
-	doc.posting_date = settings.day
-	doc.voucher_type = "Opening Entry"
-	doc.company = settings.company
-	opening_balance = 50000.00
-	doc.append(
-		"accounts",
-		{
-			"account": settings.company_account,
-			"debit_in_account_currency": opening_balance,
-			"cost_center": default_cost_center,
-		},
-	)
-	retained_earnings = frappe.get_value(
-		"Account", {"account_name": "Retained Earnings", "company": settings.company}
-	)
-	doc.append(
-		"accounts",
-		{
-			"account": retained_earnings,
-			"credit_in_account_currency": opening_balance,
-			"cost_center": default_cost_center,
-		},
-	)
-	doc.save()
-	doc.submit()
 
 
 def create_farm_shifts():
@@ -199,6 +146,7 @@ employees = [
 			"postal_code": "01238",
 		},
 		"phone": "(122) 785-7428",
+		"roles": ["Driver"],
 	},
 	{
 		"name": "Dylan Lucas",
@@ -212,6 +160,7 @@ employees = [
 			"postal_code": "81485",
 		},
 		"phone": "(602) 012-4480",
+		"roles": ["Driver"],
 	},
 	{
 		"name": "Bibi Bishop",
@@ -238,6 +187,7 @@ employees = [
 			"postal_code": "47329",
 		},
 		"phone": "(142) 627-2292",
+		"roles": ["Driver"],
 	},
 	{
 		"name": "Christian Dalton",
@@ -251,6 +201,7 @@ employees = [
 			"postal_code": "00114",
 		},
 		"phone": "(926) 670-5011",
+		"roles": ["Driver"],
 	},
 	{
 		"name": "Lenore Robbins",
@@ -264,6 +215,7 @@ employees = [
 			"postal_code": "23292",
 		},
 		"phone": "(215) 326-9320",
+		"roles": ["Driver"],
 	},
 	{
 		"name": "Serena Rojas",
@@ -277,6 +229,7 @@ employees = [
 			"postal_code": "89989",
 		},
 		"phone": "(897) 608-1493",
+		"roles": ["Driver"],
 	},
 	{
 		"name": "Gordon Herman",
@@ -409,6 +362,9 @@ def create_employees(settings, employees):
 		user.email = f"""{unicodedata.normalize('NFKD', user.first_name[0].lower())}{unicodedata.normalize('NFKD', user.last_name.replace("'", "").lower())}@{company_domain}"""
 		user.user_type = "System User"
 		user.append("roles", {"role": "Employee Self Service"})
+		if "roles" in employee:
+			for role in employee.get("roles"):
+				user.append("roles", {"role": role})
 		user.save()
 
 		emp = frappe.new_doc("Employee")
@@ -420,29 +376,22 @@ def create_employees(settings, employees):
 		emp.gender = employee.gender
 		emp.date_of_birth = employee.date_of_birth
 		emp.date_of_joining = employee.date_of_joining
-		# emp.tin =  #TODO add TIN to employee data
 		emp.department = "Management" if (employee_number + 1) % 3 == 0 else "Operations"
 		emp.designation = "Associate"
-		emp.mode_of_payment = "Check" if employee_number % 3 == 0 else "ACH/EFT"
-		emp.mode_of_payment = "Cash" if employee_number == 10 else emp.mode_of_payment
-		emp.expense_approver = "Administrator"
 		emp.user_id = user.name
+		emp.cell_number = employee.phone
 		emp.create_user_permission = 0
-		if emp.mode_of_payment == "ACH/EFT":
-			emp.bank = (
-				"Local Bank" if settings.company == "Saccharum Distribution" else "Royal Bank of Canada"
-			)
-			emp.bank_account = f"{employee_number}12345"
 		emp.save()
 
 		addr = frappe.new_doc("Address")
 		addr.address_title = employee.name
-		addr.address_type = "Billing"
+		addr.address_type = "Personal"
 		addr.address_line1 = employee.address.get("address_line1")
 		addr.city = employee.address.get("city")
 		addr.state = employee.address.get("state")
-		addr.country = "Canada" if settings.company == "Saccharum Distribution" else "United States"
+		addr.country = "United States"
 		addr.pincode = employee.address.get("postal_code")
+		addr.phone = employee.phone
 		addr.append("links", {"link_doctype": "Employee", "link_name": emp.name})
 		addr.save()
 		emp.employee_primary_address = addr.name
@@ -460,17 +409,87 @@ def create_employees(settings, employees):
 			shift.shift_type = shift_type[0]
 		shift.save()
 
+		if "roles" in employee:
+			if role == "Driver":
+				create_driver(emp)
+
 
 def create_vehicles():
-	# box truck, pickup truck, tractor, utv
-	# generate vin and traccar IMEI
-	pass
+	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
+	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
+	drivers = frappe.get_all("Driver", pluck="name")
+	driver_idx = 0
+	for idx, vehicle in enumerate(vehicles):
+		if frappe.db.exists("Vehicle", vehicle.get("name")):
+			continue
+		doc = frappe.new_doc("Vehicle")
+		doc.update(vehicle)
+		doc.start_date = getdate().replace(day=1)
+		doc.end_date = doc.start_date.replace(month=(doc.start_date.month + 1) % 13)
+		doc.insurance_company = "Cooperative Insurance Company"
+		doc.append("drivers", {"driver": drivers[driver_idx]})
+		doc.append("drivers", {"driver": drivers[driver_idx - 1]})
+		if idx % 2:
+			driver_idx += 1
+			doc.append("drivers", {"driver": drivers[driver_idx]})
+		doc.save()
 
 
 def create_locations():
 	# state parks or forests in New Hampshire
+	# farm (Concord)
 	pass
 
 
 def create_vehicle_logs():
 	pass
+
+
+def create_driver(emp):
+	driver = frappe.new_doc("Driver")
+	driver.status = "Active"
+	driver.full_name = emp.employee_name
+	dl_expiry_year = getdate().year + (((getdate().year - emp.date_of_birth.year) - 16) % 5)
+	driver.expiry_date = emp.date_of_birth.replace(year=dl_expiry_year)
+	driver.issuing_date = driver.expiry_date.replace(year=driver.expiry_date.year - 5)
+	driver.cell_number = emp.cell_number
+	driver.employee = emp.name
+	license_number = f"{emp.date_of_birth.month}{emp.last_name[0]}{emp.first_name[0]}{driver.issuing_date.year:02}{driver.issuing_date.day:02}"
+	driver.license_number
+	driver.append(
+		"driving_license_category",
+		{
+			"license_number": license_number,
+			"class": "C",
+			"description": "Commercial",
+			"issuing_date": driver.issuing_date,
+			"expiry_date": driver.expiry_date,
+		},
+	)
+	driver.address = frappe.db.get_value(
+		"Dynamic Link",
+		{"link_doctype": "Employee", "link_name": emp.name, "parenttype": "Address"},
+		"parent",
+	)
+	driver.save()
+
+
+def create_suppliers(settings):
+	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
+	suppliers = json.loads((fixtures_directory / "supplier.json").read_text(encoding="UTF-8"))
+	for supplier in suppliers:
+		if frappe.db.exists("Supplier", supplier.get("name")):
+			continue
+		if not frappe.db.exists("Supplier Group", supplier.get("supplier_group")):
+			sg = frappe.new_doc("Supplier Group")
+			sg.supplier_group_name = supplier.get("supplier_group")
+			sg.parent_supplier_group = "All Supplier Groups"
+			sg.save()
+		doc = frappe.new_doc("Supplier")
+		doc.update(supplier)
+		doc.save()
+
+
+def create_customers(settings):
+	pass
+	# captive customers

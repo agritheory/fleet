@@ -14,6 +14,7 @@ from frappe.installer import update_site_config
 def after_install():
 	install_states_and_provinces()
 	install_custom_html_blocks()
+	install_driver_role()
 	create_traccar_user()
 	add_custom_queue()
 
@@ -124,3 +125,17 @@ def add_custom_queue():
 			print(f"Command failed: {stderr}.")
 		else:
 			print(f"Command failed: {stdout}.")
+
+
+def install_driver_role():
+	if not frappe.db.exists("Role", "Driver"):
+		role = frappe.new_doc("Role")
+		role.update(
+			{
+				"name": "Driver",
+				"role_name": "Driver",
+				"desk_access": True,
+				"home_page": "/app/fleet",
+			}
+		)
+		role.save()
