@@ -84,7 +84,7 @@
 			"owner": "Administrator",
 			"property": "field_order",
 			"property_type": "Data",
-			"value": "[\"custom_license_number\", \"class\", \"description\", \"issuing_date\", \"expiry_date\"]"
+			"value": "[\"license_number\", \"class\", \"description\", \"issuing_date\", \"expiry_date\"]"
 		}
 	],
 	"sync_on_migrate": 1

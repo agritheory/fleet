@@ -59,3 +59,24 @@ def get_battery_voltage() -> str:
 		output += f'<tr><td><a href="/app/vehicle/{b.name}">{b.name}</a></td><td align="right">{flt(b.battery_voltage):2.2f}</td></tr>'
 	output += "</tbody></table>"
 	return output
+
+
+@frappe.whitelist()
+def get_eta():
+	dt = frappe.get_all("Delivery Trip", {"status": ["in", ["Scheduled", "In Transit"]]})
+	# TODO: refactor to sort by estimated arrival from Delivery Stop and distance to that location
+	output = '<table class="table table-hover table-compact" style="margin-bottom: 1rem"><tbody>'
+	output += "<tr><th>Driver</th><th>Vehicle</th><th>Customer</th><th>Estimated Arrival</th></tr>"
+	for row in dt:
+		output += f"""
+		<tr
+			<td><a href="/app/driver/{row.driver}">{row.driver}</a></td>
+			<td><a href="/app/vehicle/{row.vehicle}">{row.vehicle}</a></td>
+			<td><a href="/app/customer/{row.customer}">{row.customer}</a></td>
+			<td>{row.estimated_arrival}</td>
+		</tr>
+		"""
+	if not dt:
+		output += '<tr><td colspan=4 align="center">No Delivery Trips Found</td></tr>'
+	output += "</tbody></table>"
+	return output

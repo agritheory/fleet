@@ -15,6 +15,7 @@
 		"notifications_tab",
 		"notification_settings_section",
 		"external_battery_low_threshold",
+		"battery_level_notification",
 		"frequency_tab",
 		"gps_poll_frequency",
 		"column_break_awnn",
@@ -105,11 +106,17 @@
 			"fieldname": "odometer_poll_frequency",
 			"fieldtype": "Data",
 			"label": "Odometer Poll Frequency"
+		},
+		{
+			"fieldname": "battery_level_notification",
+			"fieldtype": "Link",
+			"label": "Battery Level Notification",
+			"options": "Notification"
 		}
 	],
 	"issingle": 1,
 	"links": [],
-	"modified": "2024-11-13 18:09:29.159478",
+	"modified": "2024-12-03 15:44:54.051586",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "Traccar Integration",

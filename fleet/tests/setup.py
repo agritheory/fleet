@@ -455,7 +455,7 @@ def create_driver(emp):
 	driver.cell_number = emp.cell_number
 	driver.employee = emp.name
 	license_number = f"{emp.date_of_birth.month}{emp.last_name[0]}{emp.first_name[0]}{driver.issuing_date.year:02}{driver.issuing_date.day:02}"
-	driver.license_number
+	driver.license_number = license_number
 	driver.append(
 		"driving_license_category",
 		{
