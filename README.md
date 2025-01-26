@@ -57,3 +57,13 @@ To run pytest
 source env/bin/activate
 pytest ~/frappe-bench/apps/fleet/fleet/tests -s
 ```
+
+To start local Traccar instance
+```
+docker run -d   --name traccar-test   -p 8082:8082   -p 5000-5150:5000-5150   traccar/traccar:latest
+```
+
+To simulate GPS data:
+```
+bench execute 'fleet.tests.simulate_gps_data.simulate'
+```

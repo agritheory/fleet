@@ -143,34 +143,27 @@ after_install = "fleet.install.after_install"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Vehicle": {
+		"validate": [
+			"fleet.overrides.vehicle.validate_poll_frequency_cron_format",
+		],
+		"before_save": [
+			"fleet.overrides.vehicle.check_schedule_poll_frequency",
+		],
+	}
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"fleet.tasks.all"
-# 	],
-# 	"daily": [
-# 		"fleet.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"fleet.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"fleet.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"fleet.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"cron": {
+		"* * * * *": [
+			"fleet.traccar.sync_vehicle",
+		],
+	}
+}
 
 # Testing
 # -------
