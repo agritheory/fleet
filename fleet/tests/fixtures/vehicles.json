@@ -31,7 +31,8 @@
 		"column_break_21": "",
 		"color": "Orange",
 		"wheels": 4,
-		"doors": 2
+		"doors": 2,
+		"traccar_iemi": "867634109582301"
 	},
 	{
 		"doctype": "Vehicle",
@@ -59,7 +60,8 @@
 		"color": "Orange",
 		"wheels": 4,
 		"doors": 2,
-		"notes": "Registered as Off-Highway Recreational Vehicle"
+		"notes": "Registered as Off-Highway Recreational Vehicle",
+		"traccar_iemi": "867634109582302"
 	},
 	{
 		"doctype": "Vehicle",
@@ -88,7 +90,8 @@
 		"column_break_21": "",
 		"color": "Dark Green",
 		"wheels": 4,
-		"doors": 4
+		"doors": 4,
+		"traccar_iemi": "867634109582303"
 	},
 	{
 		"doctype": "Vehicle",
@@ -116,6 +119,7 @@
 		"carbon_check_date": "2024-02-15",
 		"color": "Arctic White",
 		"wheels": 6,
-		"doors": 2
+		"doors": 2,
+		"traccar_iemi": "867634109582304"
 	}
 ]
