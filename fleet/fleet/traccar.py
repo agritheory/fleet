@@ -18,12 +18,12 @@ def sync_vehicle(vehicle, traccar_settings=None):
 
 	vehicle_doc = frappe.get_doc("Vehicle", vehicle)
 	try:
-		position_data = get_vehicle_position(vehicle_doc, traccar_settings)
-		if not position_data:
+		position = get_vehicle_position(vehicle_doc, traccar_settings)
+		if not position:
 			frappe.log_error(
 				_("No position data found for vehicle {0}").format(vehicle), "Traccar Integration Error"
 			)
-		log = create_vehicle_log(vehicle_doc, position_data, traccar_settings)
+		log = create_vehicle_log(vehicle_doc, position, traccar_settings)
 
 	except Exception as e:
 		frappe.log_error(
@@ -40,7 +40,7 @@ def get_vehicle_position(vehicle_doc, traccar_settings):
 
 	device_id = vehicle_doc.get("tracker_imei")
 	if not device_id:
-		frappe.throw(_("Traccar Device ID not configured for vehicle {0}").format(vehicle_doc.name))
+		return
 
 	try:
 		response = requests.get(
@@ -56,9 +56,13 @@ def get_vehicle_position(vehicle_doc, traccar_settings):
 		frappe.throw(_("Failed to connect to Traccar server: {0}").format(str(e)))
 
 
-def create_vehicle_log(vehicle_doc, position_data):
-	timestamp = datetime.fromtimestamp(position_data.get("fixTime") / 1000)
-
+def create_vehicle_log(vehicle_doc, position):
+	timestamp = datetime.fromtimestamp(position.get("fixTime") / 1000)
+	attributes = position.get("attributes", {})
+	default_distance_unit = frappe.get_value(
+		"System Settings", "System Settings", "default_distance_unit"
+	)
+	frappe.set_user("Traccar")
 	log = frappe.new_doc("Vehicle Log")
 	log.update(
 		{
@@ -67,14 +71,22 @@ def create_vehicle_log(vehicle_doc, position_data):
 			"date": timestamp.date(),
 			"employee": vehicle_doc.employee,
 			"odometer": int(
-				position_data.get("attributes", {}).get("totalDistance", 0) / 1000
+				position.get("attributes", {}).get("totalDistance", 0) / 1000
 			),  # TODO:  /1000 Convert to km, use settings for distance units
 			"last_odometer": vehicle_doc.last_odometer or 0,
-			"latitude": position_data.get("latitude"),
-			"longitude": position_data.get("longitude"),
-			"battery_level": position_data.get("attributes", {}).get("batteryLevel"),
+			"latitude": position.get("latitude"),
+			"longitude": position.get("longitude"),
+			"battery_level": position.get("attributes", {}).get("batteryLevel"),
+			"fuel_qty": attributes.get("fuel"),
+			"hours": attributes.get("hours") or attributes.get("engineHours"),
+			"engine_temperature": attributes.get("engineTemp"),
+			"speed": position.get("speed"),
+			"diagnostic": attributes.get("diagnostic")[:140],
+			"rpm": attributes.get("rpm"),
 		}
 	)
-
 	log.save()
 	log.submit()
+
+	if log.diagnostic:
+		...  # enqueue creation of Asset Maintenance if an open does not already exist

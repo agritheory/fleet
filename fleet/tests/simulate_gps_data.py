@@ -15,7 +15,15 @@ def simulate(port=5055):
 	vehicles = frappe.get_all(
 		"Vehicle",
 		filters={"disabled": False},
-		fields=["name", "chassis_no", "last_odometer", "gps_location", "make", "fuel_type"],
+		fields=[
+			"name",
+			"chassis_no",
+			"last_odometer",
+			"gps_location",
+			"make",
+			"fuel_type",
+			"traccar_iemi",
+		],
 	)
 
 	try:
@@ -51,9 +59,14 @@ def simulate(port=5055):
 
 				timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
+				if vehicle.name == "3812947":
+					alarm_param = "&alarm=check-engine"  # or 'malfunction' is also commonly used
+				else:
+					alarm_param = ""
+
 				data = (
-					f"?id={vehicle.chassis_no}&lat={lat}&lon={lon}&timestamp={timestamp}"
-					f"&batt={batt:.1f}&temp={temp:.1f}&{usage_param}&fuel={fuel_level}\r\n"
+					f"?id={vehicle.traccar_iemi}&lat={lat}&lon={lon}&timestamp={timestamp}"
+					f"&batt={batt:.1f}&temp={temp:.1f}&{usage_param}&fuel={fuel_level}{alarm_param}\r\n"
 				)
 
 				sock.send(data.encode())
