@@ -7,6 +7,7 @@ app_publisher = "AgriTheory"
 app_description = "Fleet Management Tools for ERPNext"
 app_email = "support@agritheory.com"
 app_license = "mit"
+required_apps = ["erpnext", "hrms"]
 
 # Apps
 # ------------------
