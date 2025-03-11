@@ -1,0 +1,50 @@
+[
+	{
+		"doctype": "Vehicle Log",
+		"license_plate": "AG-NH-7623",
+		"odometer": 645,
+		"last_odometer": 644,
+		"battery_level": 23.9,
+		"hours": 35,
+		"rpm": 0,
+		"speed": 0,
+		"engine_temperature": 86.7,
+		"fuel_qty": 10
+	},
+	{
+		"doctype": "Vehicle Log",
+		"license_plate": "NH-OHV-4521",
+		"odometer": 892,
+		"last_odometer": 891,
+		"battery_level": 24.1,
+		"hours": 77,
+		"rpm": 0,
+		"speed": 0,
+		"engine_temperature": 92.1,
+		"fuel_qty": 7
+	},
+	{
+		"doctype": "Vehicle Log",
+		"license_plate": "3812947",
+		"odometer": 187632,
+		"last_odometer": 187629,
+		"battery_level": 11.9,
+		"hours": 0,
+		"rpm": 0,
+		"speed": 0,
+		"engine_temperature": 77.9,
+		"fuel_qty": 12
+	},
+	{
+		"doctype": "Vehicle Log",
+		"license_plate": "2749813",
+		"odometer": 78523,
+		"last_odometer": 78517,
+		"battery_level": 12.2,
+		"hours": 0,
+		"rpm": 0,
+		"speed": 0,
+		"engine_temperature": 84.7,
+		"fuel_qty": 22
+	}
+]

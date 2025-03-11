@@ -1,0 +1,107 @@
+[
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Andromeda Fruit Market",
+		"customer_type": "Company",
+		"tax_id": "04-41486",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Betelgeuse Bakery Suppliers",
+		"customer_type": "Company",
+		"tax_id": "04-43711",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Cassiopeia Restaurant Group",
+		"customer_type": "Company",
+		"tax_id": "04-33564",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Delphinus Food Distributors",
+		"customer_type": "Company",
+		"tax_id": "04-35582",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Grus Goodies",
+		"customer_type": "Company",
+		"tax_id": "04-50909",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Hydra Produce Co",
+		"customer_type": "Company",
+		"tax_id": "04-57983",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Phoenix Fruit, Ltd",
+		"customer_type": "Company",
+		"tax_id": "04-98249",
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Almacs Food Group",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Beans and Dreams Roasters",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Happy Basket Food Distribution Group",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Midtown Munchies Inc",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "My Way Cup Coffee",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Nom Nom Cafe",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Sand Street Deli",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	},
+	{
+		"customer_group": "Commercial",
+		"customer_name": "Whole Harvest Grocery Group",
+		"customer_type": "Company",
+		"tax_id": null,
+		"territory": "United States"
+	}
+]

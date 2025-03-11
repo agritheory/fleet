@@ -32,7 +32,7 @@
 		"color": "Orange",
 		"wheels": 4,
 		"doors": 2,
-		"traccar_iemi": "867634109582301"
+		"traccar_imei": "867634109582301"
 	},
 	{
 		"doctype": "Vehicle",
@@ -61,7 +61,7 @@
 		"wheels": 4,
 		"doors": 2,
 		"notes": "Registered as Off-Highway Recreational Vehicle",
-		"traccar_iemi": "867634109582302"
+		"traccar_imei": "867634109582302"
 	},
 	{
 		"doctype": "Vehicle",
@@ -91,7 +91,7 @@
 		"color": "Dark Green",
 		"wheels": 4,
 		"doors": 4,
-		"traccar_iemi": "867634109582303"
+		"traccar_imei": "867634109582303"
 	},
 	{
 		"doctype": "Vehicle",
@@ -120,6 +120,6 @@
 		"color": "Arctic White",
 		"wheels": 6,
 		"doors": 2,
-		"traccar_iemi": "867634109582304"
+		"traccar_imei": "867634109582304"
 	}
 ]
