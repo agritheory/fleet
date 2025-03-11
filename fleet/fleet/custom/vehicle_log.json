@@ -122,7 +122,7 @@
 			"in_list_view": 0,
 			"in_preview": 0,
 			"in_standard_filter": 0,
-			"insert_after": "engine_temperature",
+			"insert_after": "hours",
 			"is_system_generated": 0,
 			"is_virtual": 0,
 			"label": "",
@@ -171,7 +171,7 @@
 			"in_list_view": 0,
 			"in_preview": 0,
 			"in_standard_filter": 0,
-			"insert_after": "engine_temp",
+			"insert_after": "engine_temperature",
 			"is_system_generated": 0,
 			"is_virtual": 0,
 			"label": "Diagnostic",
@@ -220,7 +220,7 @@
 			"in_list_view": 0,
 			"in_preview": 0,
 			"in_standard_filter": 0,
-			"insert_after": "hours",
+			"insert_after": "speed",
 			"is_system_generated": 0,
 			"is_virtual": 0,
 			"label": "Engine Temperature",
@@ -416,7 +416,7 @@
 			"in_list_view": 0,
 			"in_preview": 0,
 			"in_standard_filter": 0,
-			"insert_after": "speed",
+			"insert_after": "column_break_qofid",
 			"is_system_generated": 0,
 			"is_virtual": 0,
 			"label": "RPM",
@@ -465,7 +465,7 @@
 			"in_list_view": 0,
 			"in_preview": 0,
 			"in_standard_filter": 0,
-			"insert_after": "column_break_qofid",
+			"insert_after": "rpm",
 			"is_system_generated": 0,
 			"is_virtual": 0,
 			"label": "Speed",
@@ -607,7 +607,7 @@
 			"owner": "Administrator",
 			"property": "field_order",
 			"property_type": "Data",
-			"value": "[\"vehicle_section\", \"naming_series\", \"license_plate\", \"employee\", \"column_break_7\", \"model\", \"make\", \"odometer_reading\", \"date\", \"odometer\", \"column_break_12\", \"last_odometer\", \"refuelling_details\", \"fuel_qty\", \"price\", \"column_break_15\", \"supplier\", \"invoice\", \"service_details\", \"service_detail\", \"amended_from\", \"section_break_av3pb\", \"notes\", \"telemetry\", \"longitude\", \"latitude\", \"battery_level\", \"hours\", \"column_break_uuwz\", \"speed\", \"rpm\", \"engine_temperature\", \"diagnostic\"]"
+			"value": "[\"vehicle_section\", \"naming_series\", \"license_plate\", \"employee\", \"column_break_7\", \"model\", \"make\", \"odometer_reading\", \"date\", \"odometer\", \"column_break_12\", \"last_odometer\", \"refuelling_details\", \"fuel_qty\", \"price\", \"column_break_15\", \"supplier\", \"invoice\", \"service_details\", \"service_detail\", \"amended_from\", \"section_break_av3pb\", \"notes\", \"telemetry\", \"longitude\", \"latitude\", \"battery_level\", \"hours\", \"column_break_qofid\", \"rpm\", \"speed\", \"engine_temperature\", \"diagnostic\"]"
 		}
 	],
 	"sync_on_migrate": 1

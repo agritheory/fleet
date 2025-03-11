@@ -147,10 +147,11 @@ after_install = "fleet.install.after_install"
 doc_events = {
 	"Vehicle": {
 		"validate": [
-			"fleet.overrides.vehicle.validate_poll_frequency_cron_format",
+			"fleet.fleet.overrides.vehicle.validate_poll_frequency_cron_format",
 		],
 		"before_save": [
-			"fleet.overrides.vehicle.check_schedule_poll_frequency",
+			"fleet.fleet.overrides.vehicle.check_schedule_poll_frequency",
+			"fleet.fleet.traccar.add_traccar_device",
 		],
 	}
 }
@@ -161,7 +162,7 @@ doc_events = {
 scheduler_events = {
 	"cron": {
 		"* * * * *": [
-			"fleet.traccar.sync_vehicle",
+			"fleet.fleet.traccar.sync_vehicle",
 		],
 	}
 }

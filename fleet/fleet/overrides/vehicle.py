@@ -1,24 +1,35 @@
 # Copyright (c) 2025, AgriTheory and contributors
 # For license information, please see license.txt
-import datetime
-import croniter
+
+
+import json
+from datetime import datetime
 
 import frappe
-from frappe.utils.data import now_datetime, get_datetime, _
-
+from croniter import croniter
 from erpnext.setup.doctype.vehicle.vehicle import Vehicle
+from frappe import _
+from frappe.utils.data import get_datetime, now_datetime
 
 
 class FleetVehicle(Vehicle):
 	@property
 	def gps_location(self):
-		latitude, longitude = frappe.db.get_value(
+		coords = frappe.db.get_value(
 			"Vehicle Log",
 			{"creation": "less than now", "license_plate": self.name},
-			["latitude", "longitude"],
+			["longitude", "latitude"],
 		)
-		# encode to geojson
-		return 0, 0
+		if not coords:
+			return None
+		# encode to geojson, which uses (lon, lat) order
+		geojson = {
+			"type": "FeatureCollection",
+			"features": [
+				{"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": coords}}
+			],
+		}
+		return json.dumps(geojson)
 
 	@property
 	def battery_level(self):
@@ -64,7 +75,7 @@ def schedule_poll_frequency(doc, update=False):
 		doc.db_set("poll_frequency_next_execution", next_execution, update_modified=False)
 
 
-def validate_poll_frequency_cron_format(doc):
+def validate_poll_frequency_cron_format(doc, method=None):
 	if not doc.poll_frequency:
 		return
 

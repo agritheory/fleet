@@ -1,27 +1,28 @@
 # Copyright (c) 2024, AgriTheory and contributors
 # For license information, please see license.txt
 
-import frappe
 import json
 from typing import Any
 
+import frappe
 from frappe.utils.data import flt
 
 
 @frappe.whitelist()
 def get_coords() -> dict[str, Any]:
-	coords = frappe.get_all("Vehicle", fields=["name", "gps_location"])
+	vs = frappe.get_all("Vehicle")
 
 	features = []
 	bounds = {"minLat": 90, "maxLat": -90, "minLng": 180, "maxLng": -180}
 
-	for vehicle in coords:
-		if not vehicle.gps_location:
+	for vehicle in vs:
+		gps_location = frappe.get_doc("Vehicle", vehicle).gps_location
+		if not gps_location:
 			continue
 
 		try:
-			location = json.loads(vehicle.gps_location)
-			lng, lat = location["geometry"]["coordinates"]
+			location = json.loads(gps_location)
+			lng, lat = location["features"][0]["geometry"]["coordinates"]
 			bounds["minLat"] = min(bounds["minLat"], lat)
 			bounds["maxLat"] = max(bounds["maxLat"], lat)
 			bounds["minLng"] = min(bounds["minLng"], lng)
@@ -29,7 +30,7 @@ def get_coords() -> dict[str, Any]:
 
 			feature = {
 				"type": "Feature",
-				"geometry": location["geometry"],
+				"geometry": location["features"][0]["geometry"],
 				"properties": {
 					"name": f'<a href="/app/vehicle/{vehicle.name}">{vehicle.name}</a>',
 					# "driver": f'<a href="/app/vehicle/{vehicle.driver}">{vehicle.driver}</a>',
