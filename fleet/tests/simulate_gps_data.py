@@ -1,11 +1,16 @@
 # Copyright (c) 2025, AgriTheory and contributors
 # For license information, please see license.txt
 
+
+import random
 import socket
 import time
-from datetime import datetime
-import random
+from itertools import cycle
+
 import frappe
+
+from fleet.fleet.traccar import get_now_timestamp_string
+from fleet.tests.fixtures.locations_and_routes import routes
 
 
 def simulate(port=5055):
@@ -19,13 +24,15 @@ def simulate(port=5055):
 			"name",
 			"chassis_no",
 			"last_odometer",
-			"gps_location",
+			# "gps_location",  # class property, need to grab off instance
 			"make",
 			"fuel_type",
-			"traccar_iemi",
+			"traccar_imei",
+			"traccar_id",
 		],
 	)
-
+	vehicle_routes = frappe._dict({r["vehicle"]: cycle(r["route"]) for r in routes})
+	# usage_dict = frappe._dict({v.name: v.last_odometer for v in vehicles})
 	try:
 		while True:
 			for vehicle in vehicles:
@@ -38,26 +45,29 @@ def simulate(port=5055):
 					limit=1,
 				)
 				fuel_level = fuel_log[0].fuel_qty if fuel_log else 0
-
-				lat = 43.2081  # Manchester, NH
-				lon = -71.5376
+				lat, lon = next(vehicle_routes[vehicle.name])
 				usage = float(vehicle.last_odometer)
-				lat += random.uniform(-0.001, 0.001)
-				lon += random.uniform(-0.001, 0.001)
+				# usage = usage_dict[vehicle.name]
 
 				if vehicle.make in ["Kubota", "Bobcat"]:
-					usage += random.uniform(0.01, 0.05)  # Engine hours
+					usage += round(random.uniform(0.01, 0.05), 2)  # Engine hours
 					usage_param = f"hours={usage:.1f}"
 				else:
-					usage += random.uniform(0.1, 0.5)  # Odometer miles
+					usage += round(random.uniform(0.05, 0.3), 2)  # Odometer miles
 					usage_param = f"odometer={usage:.1f}"
-
+				# usage_dict[vehicle.name] += usage
 				batt = (
-					random.uniform(23.8, 24.2) if vehicle.fuel_type == "Diesel" else random.uniform(11.8, 12.4)
+					round(random.uniform(23.8, 24.2), 2)
+					if vehicle.fuel_type == "Diesel"
+					else round(random.uniform(11.8, 12.4), 2)
 				)
-				temp = random.uniform(85, 95) if vehicle.fuel_type == "Diesel" else random.uniform(75, 85)
+				temp = (
+					round(random.uniform(85, 95), 2)
+					if vehicle.fuel_type == "Diesel"
+					else round(random.uniform(75, 85), 2)
+				)
 
-				timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+				timestamp = get_now_timestamp_string()
 
 				if vehicle.name == "3812947":
 					alarm_param = "&alarm=check-engine"  # or 'malfunction' is also commonly used
@@ -65,7 +75,7 @@ def simulate(port=5055):
 					alarm_param = ""
 
 				data = (
-					f"?id={vehicle.traccar_iemi}&lat={lat}&lon={lon}&timestamp={timestamp}"
+					f"?id={vehicle.traccar_id}&lat={lat}&lon={lon}&timestamp={timestamp}"
 					f"&batt={batt:.1f}&temp={temp:.1f}&{usage_param}&fuel={fuel_level}{alarm_param}\r\n"
 				)
 
