@@ -1,13 +1,30 @@
-[tool.poetry]
+[project]
 name = "fleet"
-authors = ["AgriTheory <support@agritheory.com>"]
 description = "Fleet Management Tools for ERPNext"
-requires-python = ">=3.10"
+authors = [
+    { name = "AgriTheory", email = "support@agritheory.com" },
+]
 readme = "README.md"
+license = { file = "license.txt" }
+dynamic = [ "version", "dependencies", "requires-python" ]
+
+[project.urls]
+homepage = "https://github.com/agritheory/fleet"
+source = "https://github.com/agritheory/fleet"
+changelog = "https://github.com/agritheory/fleet/CHANGELOG.md"
+documentation = "https://github.com/agritheory/fleet/tree/version-15/fleet/docs"
+issues = "https://github.com/agritheory/fleet/issues"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
 version =  "15.0.0"
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.10,<3.14"
 test_utils = { git = "https://github.com/agritheory/test_utils.git" }
 
 [tool.poetry.group.dev.dependencies]
@@ -15,10 +32,6 @@ pytest = "^8.2.2"
 pytest-cov = "^5.0.0"
 pytest-order = "^1.2.1"
 mypy = "^1.10.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.codespell]
 skip = "CHANGELOG.md"
