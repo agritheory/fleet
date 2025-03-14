@@ -38,9 +38,7 @@ def sync_vehicle(vehicle=None, traccar_settings=None):
 			log = create_vehicle_log(vehicle_doc, position)
 
 		except Exception as e:
-			frappe.log_error(
-				frappe.get_traceback(), _("Failed to sync vehicle {0} with Traccar").format(vehicle)
-			)
+			frappe.log_error(frappe.get_traceback(), _("Failed to sync vehicle {0} with Traccar").format(v))
 
 
 def get_vehicle_position(vehicle_doc):

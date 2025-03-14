@@ -32,7 +32,8 @@
 		"color": "Orange",
 		"wheels": 4,
 		"doors": 2,
-		"traccar_imei": "867634109582301"
+		"traccar_imei": "867634109582301",
+		"poll_frequency": "*/2 * * * *"
 	},
 	{
 		"doctype": "Vehicle",

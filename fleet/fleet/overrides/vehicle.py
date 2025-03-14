@@ -42,7 +42,7 @@ def check_schedule_poll_frequency(doc, method=None):
 	old_value = doc.get_db_value("poll_frequency")
 
 	if old_value != doc.poll_frequency:
-		doc.schedule_poll_frequency(update=True)
+		schedule_poll_frequency(doc, update=True)
 
 
 def schedule_poll_frequency(doc, update=False):
