@@ -11,6 +11,7 @@ import frappe
 import requests
 from dateutil import parser
 from frappe import _
+from frappe.utils.safe_exec import is_job_queued
 
 
 def sync_vehicle(vehicle=None, traccar_settings=None):
@@ -108,7 +109,21 @@ def create_vehicle_log(vehicle_doc, position):
 	log.submit()
 
 	if log.diagnostic:
-		...  # enqueue creation of Asset Maintenance if an open does not already exist
+		asset_name = frappe.get_value("Asset", {"asset_name": vehicle_doc.name})
+		if asset_name and not frappe.db.exists(
+			"Asset Repair", {"asset": asset_name, "description": ["like", f"%{log.diagnostic}%"]}
+		):
+			job_name = f"{asset_name}-{log.diagnostic[:25]}"
+			queue = "traccar"
+			if not is_job_queued(job_name, queue=queue):
+				frappe.enqueue(
+					method=create_draft_asset_repair,
+					queue=queue,
+					timeout=3600,
+					job_name=job_name,
+					asset_name=asset_name,
+					description=log.diagnostic,
+				)
 
 
 def get_traccar_device(device_uniqid):
@@ -284,3 +299,14 @@ def get_datetime_from_timestamp_string(timestamp):
 		return
 	dt = parser.parse(timestamp)
 	return dt
+
+
+def create_draft_asset_repair(asset_name, description):
+	company, cost_center = frappe.db.get_value("Asset", asset_name, ["company", "cost_center"])
+	ar = frappe.new_doc("Asset Repair")
+	ar.asset = asset_name
+	ar.company = company
+	ar.failure_date = frappe.utils.get_datetime()
+	ar.cost_center = cost_center
+	ar.description = description
+	ar.save()
