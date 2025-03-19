@@ -10,14 +10,16 @@
 		{
 			"fieldname": "driver",
 			"fieldtype": "Link",
+			"in_list_view": 1,
 			"label": "Driver",
-			"options": "Driver"
+			"options": "Driver",
+			"reqd": 1
 		}
 	],
 	"index_web_pages_for_search": 1,
 	"istable": 1,
 	"links": [],
-	"modified": "2024-11-27 15:47:06.205379",
+	"modified": "2025-03-18 19:43:23.062471",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "Vehicle Driver",
