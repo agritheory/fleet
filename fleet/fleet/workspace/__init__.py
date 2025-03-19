@@ -46,18 +46,17 @@ def get_coords() -> dict[str, Any]:
 
 @frappe.whitelist()
 def get_battery_voltage() -> str:
-	# TODO: add enabled/disabled to vehicle
-	battery_levels = frappe.get_all(
-		"Vehicle",
-		filters={"battery_voltage": ["is", "set"]},
-		fields=["name", "battery_voltage"],
-		order_by="battery_voltage ASC",
-		limit=5,
-	)
+	battery_levels = []
+	for v in frappe.get_all("Vehicle", {"disabled": 0}, pluck="name"):
+		v_doc = frappe.get_doc("Vehicle", v)
+		bl = v_doc.battery_level
+		if bl:
+			battery_levels.append((v, bl))
+	battery_levels = sorted(battery_levels, key=lambda b: b[1])
 	output = '<table class="table table-hover table-compact"><tbody>'
 	output += "<tr><th>Vehicle</th><th>Battery Voltage</th></tr>"
-	for b in battery_levels:
-		output += f'<tr><td><a href="/app/vehicle/{b.name}">{b.name}</a></td><td align="right">{flt(b.battery_voltage):2.2f}</td></tr>'
+	for name, bl in battery_levels:
+		output += f'<tr><td><a href="/app/vehicle/{name}">{name}</a></td><td align="right">{flt(bl):2.2f}</td></tr>'
 	output += "</tbody></table>"
 	return output
 
