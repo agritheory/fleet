@@ -5,6 +5,7 @@
 import base64
 import datetime
 import json
+import time
 from urllib.parse import urljoin
 
 import frappe
@@ -77,11 +78,21 @@ def create_vehicle_log(vehicle_doc, position):
 		position.get("fixTime") or get_now_timestamp_string()
 	)
 	attributes = position.get("attributes", {})
-	default_distance_unit = frappe.get_value(
-		"System Settings", "System Settings", "default_distance_unit"
-	)  # TODO: returns None - add custom field?
+	distance_cf = get_distance_conversion_factor()
 	frappe.set_user("Traccar")
-	vd = vehicle_doc.drivers[-1].driver  # TODO: how to get actual driver?
+	if attributes.get("driverUniqueId"):
+		driver_emp = frappe.get_value("Driver", attributes.get("driverUniqueId"), "employee")
+	else:
+		last_emp = frappe.get_all(
+			"Vehicle Log",
+			filters={"license_plate": vehicle_doc.name, "docstatus": 1},
+			fields=["employee"],
+			order_by="modified desc",
+			limit=1,
+			pluck="employee",
+		)
+		driver_emp = last_emp[0]
+	vd = vehicle_doc.drivers[-1].driver if vehicle_doc.drivers else ""
 	driver_emp = frappe.get_value("Driver", vd, "employee")
 	log = frappe.new_doc("Vehicle Log")
 	log.update(
@@ -90,9 +101,7 @@ def create_vehicle_log(vehicle_doc, position):
 			"license_plate": vehicle_doc.name,
 			"date": timestamp.date(),
 			"employee": driver_emp,
-			"odometer": int(
-				position.get("attributes", {}).get("totalDistance", 0) / 1000
-			),  # TODO:  /1000 Convert to km, use settings for distance units
+			"odometer": int(position.get("attributes", {}).get("totalDistance", 0) * distance_cf) + 1,
 			"last_odometer": vehicle_doc.last_odometer or 0,
 			"latitude": position.get("latitude"),
 			"longitude": position.get("longitude"),
@@ -105,7 +114,7 @@ def create_vehicle_log(vehicle_doc, position):
 			"rpm": attributes.get("rpm"),
 		}
 	)
-	log.save()
+	log.save(ignore_permissions=True)
 	log.submit()
 
 	if log.diagnostic:
@@ -175,14 +184,13 @@ def add_traccar_device(vehicle_doc, method=None):
 			vehicle_doc.traccar_id = device["id"]
 
 		if not device:
-			timestamp = get_now_timestamp_string()
 			data = {
 				"id": int(device_uniqid),  # Traccar creates it's own ID
 				"name": vehicle_doc.name,
 				"uniqueId": device_uniqid,
 				"status": "",
 				"disabled": bool(vehicle_doc.disabled),
-				"lastUpdate": timestamp,
+				"lastUpdate": int(time.time()),
 				"positionId": 0,
 				"groupId": 0,
 				"phone": "",
@@ -225,9 +233,7 @@ def update_traccar_device(device_id, to_update):
 			frappe.throw(_("Device does not exist in Traccar"))
 		else:
 			device = dict(device)
-
-			timestamp = get_now_timestamp_string()
-			to_update.update({"lastUpdate": timestamp})
+			to_update.update({"lastUpdate": int(time.time())})
 			data = device.update(to_update)
 			response = requests.put(
 				urljoin(traccar_server_url, f"/api/devices?id={device_id}"),
@@ -263,6 +269,85 @@ def delete_traccar_device(device_id):
 
 	except requests.exceptions.RequestException as e:
 		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def get_traccar_driver(driver_uniqid):
+	"""
+	Collects driver data from Traccar.
+
+	:param driver_uniqid: str; Traccar uniqueID for a driver (name field on Driver)
+	:return: driver data JSON object if successful, None with raised error if not
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+
+	try:
+		response = requests.get(
+			urljoin(traccar_server_url, "/api/drivers"),
+			headers=headers,
+			timeout=10,
+		)
+		response.raise_for_status()
+		drivers = response.json()
+		drivers = [d for d in drivers if d["uniqueId"] == driver_uniqid] if drivers else None
+		return drivers[0] if drivers else None
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Failed to connect to Traccar server: {0}").format(str(e)))
+
+
+def add_traccar_driver(driver_doc, method=None):
+	"""
+	Adds a driver to Traccar if it doesn't already exist. The Driver document's name is uniqueId
+
+	:param driver_doc: Driver doctype
+	:param method: str | None; method name function is called from
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	driver_uniqid = driver_doc.name
+
+	try:
+		driver = get_traccar_driver(driver_uniqid)
+		if driver and not driver_doc.traccar_user_id:
+			driver_doc.traccar_user_id = driver["uniqueId"]
+
+		if not driver:
+			data = {
+				"id": 0,  # Traccar creates it's own ID
+				"name": driver_doc.full_name,
+				"uniqueId": driver_uniqid,
+				"attributes": {},
+			}
+			response = requests.post(
+				urljoin(traccar_server_url, "/api/drivers"),
+				headers=headers,
+				timeout=10,
+				data=json.dumps(data),
+			)
+			response.raise_for_status()
+			r = response.json()
+			if r and r["uniqueId"]:
+				driver_doc.traccar_user_id = r["uniqueId"]
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def create_draft_asset_repair(asset_name, description):
+	company, cost_center = frappe.db.get_value("Asset", asset_name, ["company", "cost_center"])
+	ar = frappe.new_doc("Asset Repair")
+	ar.asset = asset_name
+	ar.company = company
+	ar.failure_date = frappe.utils.get_datetime()
+	ar.cost_center = cost_center
+	ar.description = description
+	ar.save()
 
 
 def get_server_url_and_credentials():
@@ -301,12 +386,7 @@ def get_datetime_from_timestamp_string(timestamp):
 	return dt
 
 
-def create_draft_asset_repair(asset_name, description):
-	company, cost_center = frappe.db.get_value("Asset", asset_name, ["company", "cost_center"])
-	ar = frappe.new_doc("Asset Repair")
-	ar.asset = asset_name
-	ar.company = company
-	ar.failure_date = frappe.utils.get_datetime()
-	ar.cost_center = cost_center
-	ar.description = description
-	ar.save()
+def get_distance_conversion_factor():
+	traccar_settings = frappe.get_cached_doc("Traccar Integration", "Traccar Integration")
+	dist_cf = traccar_settings.distance_conversion_factor
+	return frappe.get_value("UOM Conversion Factor", dist_cf, "value") if dist_cf else 1

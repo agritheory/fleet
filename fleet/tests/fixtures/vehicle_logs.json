@@ -2,8 +2,8 @@
 	{
 		"doctype": "Vehicle Log",
 		"license_plate": "AG-NH-7623",
-		"odometer": 645,
-		"last_odometer": 644,
+		"odometer": 2,
+		"last_odometer": 1,
 		"battery_level": 23.9,
 		"hours": 35,
 		"rpm": 0,
@@ -14,8 +14,8 @@
 	{
 		"doctype": "Vehicle Log",
 		"license_plate": "NH-OHV-4521",
-		"odometer": 892,
-		"last_odometer": 891,
+		"odometer": 2,
+		"last_odometer": 1,
 		"battery_level": 24.1,
 		"hours": 77,
 		"rpm": 0,
@@ -26,8 +26,8 @@
 	{
 		"doctype": "Vehicle Log",
 		"license_plate": "3812947",
-		"odometer": 187632,
-		"last_odometer": 187629,
+		"odometer": 2,
+		"last_odometer": 1,
 		"battery_level": 11.9,
 		"hours": 0,
 		"rpm": 0,
@@ -38,8 +38,8 @@
 	{
 		"doctype": "Vehicle Log",
 		"license_plate": "2749813",
-		"odometer": 78523,
-		"last_odometer": 78517,
+		"odometer": 2,
+		"last_odometer": 1,
 		"battery_level": 12.2,
 		"hours": 0,
 		"rpm": 0,

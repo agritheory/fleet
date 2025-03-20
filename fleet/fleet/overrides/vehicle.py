@@ -17,8 +17,9 @@ class FleetVehicle(Vehicle):
 	def gps_location(self):
 		coords = frappe.db.get_value(
 			"Vehicle Log",
-			{"creation": "less than now", "license_plate": self.name},
+			{"license_plate": self.name},
 			["longitude", "latitude"],
+			order_by="creation DESC",
 		)
 		if not coords:
 			return None
@@ -34,7 +35,7 @@ class FleetVehicle(Vehicle):
 	@property
 	def battery_level(self):
 		return frappe.db.get_value(
-			"Vehicle Log", {"creation": "less than now", "license_plate": self.name}, "battery_level"
+			"Vehicle Log", {"license_plate": self.name}, "battery_level", order_by="creation DESC"
 		)
 
 

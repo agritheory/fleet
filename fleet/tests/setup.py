@@ -104,13 +104,28 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 
 
 def create_traccar_integration():
+	f = "Meter"
+	t = "Mile"
+	if frappe.db.exists("UOM Conversion Factor", {"from_uom": f, "to_uom": t}):
+		uomcf = frappe.get_doc("UOM Conversion Factor", {"from_uom": f, "to_uom": t})
+	else:
+		uomcf = frappe.new_doc("UOM Conversion Factor")
+		uomcf.category = "Length"
+		uomcf.from_uom = f
+		uomcf.to_uom = t
+		uomcf.value = 0.000621000
+		uomcf.save()
+
 	if os.environ.get("TRACCAR_USERNAME") and os.environ.get("TRACCAR_PASSWORD"):
 		ti = frappe.new_doc("Traccar Integration")
 		ti.enable_traccar = 1
-		port = os.environ.get("TRACCAR_PORT") or "5055"  # Default in simulate function
+		port = os.environ.get("TRACCAR_PORT") or 5055  # Default in simulate function
 		ti.traccar_server_url = f"http://localhost:{port}"
 		ti.username = os.environ.get("TRACCAR_USERNAME")
 		ti.password = os.environ.get("TRACCAR_PASSWORD")
+		ti.traccar_distance_uom = "Kilometer"
+		ti.erpnext_distance_uom = "Mile"
+		ti.distance_conversion_factor = uomcf.name
 		ti.save()
 
 
@@ -509,6 +524,7 @@ def create_vehicles(settings=None):
 	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
 	drivers = frappe.get_all("Driver", pluck="name")
 	driver_idx = 0
+	n_drivers = len(drivers)
 	for idx, vehicle in enumerate(vehicles):
 		if frappe.db.exists("Vehicle", vehicle.get("name")):
 			continue
@@ -517,11 +533,9 @@ def create_vehicles(settings=None):
 		doc.start_date = getdate().replace(day=1)
 		doc.end_date = doc.start_date.replace(month=(doc.start_date.month + 1) % 13)
 		doc.insurance_company = "Cooperative Insurance Company"
-		doc.append("drivers", {"driver": drivers[driver_idx]})
-		doc.append("drivers", {"driver": drivers[driver_idx - 1]})
-		if idx % 2:
-			driver_idx += 1
-			doc.append("drivers", {"driver": drivers[driver_idx]})
+		doc.append("drivers", {"driver": drivers[driver_idx % n_drivers]})
+		doc.append("drivers", {"driver": drivers[(driver_idx - 2) % n_drivers]})
+		driver_idx += 1
 		doc.save()
 
 		# Create an Item

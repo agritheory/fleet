@@ -136,9 +136,9 @@ after_install = "fleet.install.after_install"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Vehicle": "fleet.fleet.overrides.vehicle.FleetVehicle",
+}
 
 # Document Events
 # ---------------
@@ -153,7 +153,12 @@ doc_events = {
 			"fleet.fleet.overrides.vehicle.check_schedule_poll_frequency",
 			"fleet.fleet.traccar.add_traccar_device",
 		],
-	}
+	},
+	"Driver": {
+		"before_save": [
+			"fleet.fleet.traccar.add_traccar_driver",
+		]
+	},
 }
 
 # Scheduled Tasks

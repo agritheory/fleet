@@ -9,6 +9,9 @@
 		"server_info_section",
 		"traccar_server_url",
 		"encoded_credentials",
+		"traccar_distance_uom",
+		"erpnext_distance_uom",
+		"distance_conversion_factor",
 		"column_break_ewch",
 		"username",
 		"password",
@@ -87,11 +90,32 @@
 			"fieldtype": "Link",
 			"label": "Battery Level Notification",
 			"options": "Notification"
+		},
+		{
+			"fieldname": "traccar_distance_uom",
+			"fieldtype": "Link",
+			"label": "Traccar Distance UoM",
+			"options": "UOM"
+		},
+		{
+			"description": "Distance UoM for Vehicle Odometer and Delivery Trips",
+			"fieldname": "erpnext_distance_uom",
+			"fieldtype": "Link",
+			"label": "ERPNext Distance UoM",
+			"options": "UOM"
+		},
+		{
+			"depends_on": "eval:doc.traccar_distance_uom != doc.erpnext_distance_uom",
+			"fieldname": "distance_conversion_factor",
+			"fieldtype": "Link",
+			"label": "Distance Conversion Factor",
+			"mandatory_depends_on": "eval:doc.traccar_distance_uom != doc.erpnext_distance_uom",
+			"options": "UOM Conversion Factor"
 		}
 	],
 	"issingle": 1,
 	"links": [],
-	"modified": "2025-01-25 16:21:02.109913",
+	"modified": "2025-03-19 14:46:04.305632",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "Traccar Integration",

@@ -57,7 +57,14 @@ source env/bin/activate
 pytest ./apps/fleet/fleet/tests -s --disable-warnings
 ```
 To install test data and simulate GPS data pushing to a development Traccar server, follow these steps:
-1) Create a [Traccar account](https://www.traccar.org/) and save the username and password along with the Docker port mapping value as local environment variables. If these are present, the test data script will automatically create the Traccar Integration document and add vehicle devices to the Docker instance.
+1) Start a local Traccar instance using their Docker image (Mac users don't need both port mapping `-p` arguments). Navigate to the local Traccar server via `http://localhost:PORT_NUMBER` (where the `PORT_NUMBER` is the first one before the colon in the command below), register an account with a username and password, then log in.
+```shell
+docker run -d   --name traccar-test   -p 8082:8082   -p 5000-5150:5000-5150   traccar/traccar:latest
+
+# If the port is already available as an environment variable (see step 2):
+docker run -d   --name traccar-test   -p $TRACCAR_PORT:$TRACCAR_PORT   traccar/traccar:latest
+```
+2) Save the username and password along with the Docker port mapping value as local environment variables. With these variables present, the test data script will automatically create the Traccar Integration document and add vehicle devices to the Docker instance. The test script needs the Traccar Integration in place to properly create vehicles. 
 ```shell
 # In your shell profile/rc file
 export TRACCAR_USERNAME='<account username>'
@@ -65,22 +72,11 @@ export TRACCAR_PASSWORD='<account password>'
 # Optional: if the port number is different than the simulate default of 5055
 export TRACCAR_PORT=<port number>
 ```
-2) Start a local Traccar instance using their Docker image (Mac users don't need both port mapping `-p` arguments). You can access the local Traccar server via `http://localhost:PORT_NUMBER` where the `PORT_NUMBER` is the first one before the colon.
-```shell
-docker run -d   --name traccar-test   -p 8082:8082   -p 5000-5150:5000-5150   traccar/traccar:latest
-
-# If the port is available as an environment variable:
-docker run -d   --name traccar-test   -p $TRACCAR_PORT:$TRACCAR_PORT   traccar/traccar:latest
-```
 3) With the docker instance running, install the demo data into your local site:
 ```shell
 bench execute 'fleet.tests.setup.before_test'
 ```
 4) Simulate GPS data:
 ```shell
-# If you ran the docker instance including port 5055
 bench execute 'fleet.tests.simulate_gps_data.simulate'
-
-# If you ran the docker instance with a different application port that's saved as an environment variable
-bench execute --args "[$TRACCAR_PORT]" 'fleet.tests.simulate_gps_data.simulate'
 ```
