@@ -63,7 +63,6 @@ def create_traccar_user():
 		u.username = "traccar"
 		u.first_name = "Traccar"
 		u.send_welcome_email = 0
-		u.append("roles", {"role": "Fleet Manager"})
 		u._validate_data_fields = types.MethodType(_bypass, u)
 		u.save()
 		frappe.model.rename_doc.rename_doc(

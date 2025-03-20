@@ -100,7 +100,7 @@ def create_vehicle_log(vehicle_doc, position):
 			"license_plate": vehicle_doc.name,
 			"date": timestamp.date(),
 			"employee": driver_emp,
-			"odometer": int(position.get("attributes", {}).get("totalDistance", 0) * distance_cf),
+			"odometer": int(position.get("attributes", {}).get("totalDistance", 0) * distance_cf) + 1,
 			"last_odometer": vehicle_doc.last_odometer or 0,
 			"latitude": position.get("latitude"),
 			"longitude": position.get("longitude"),
@@ -113,7 +113,7 @@ def create_vehicle_log(vehicle_doc, position):
 			"rpm": attributes.get("rpm"),
 		}
 	)
-	log.save()
+	log.save(ignore_permissions=True)
 	log.submit()
 
 	if log.diagnostic:
