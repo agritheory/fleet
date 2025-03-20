@@ -167,7 +167,7 @@ doc_events = {
 scheduler_events = {
 	"cron": {
 		"* * * * *": [
-			"fleet.fleet.traccar.sync_vehicle",
+			"fleet.fleet.traccar.sync_vehicles",
 		],
 	}
 }
