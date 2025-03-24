@@ -14,33 +14,56 @@ from dateutil import parser
 from frappe import _
 from frappe.utils.safe_exec import is_job_queued
 
+from fleet.fleet.overrides.vehicle import schedule_poll_frequency
 
-def sync_vehicle(vehicle=None, traccar_settings=None):
+
+def sync_vehicles(traccar_settings=None):
 	if not traccar_settings:
 		traccar_settings = frappe.get_cached_doc("Traccar Integration", "Traccar Integration")
 
 	if not traccar_settings or not traccar_settings.enable_traccar:
 		return
 
-	if not vehicle:
-		vehicles = frappe.get_all(
-			"Vehicle", {"disabled": 0, "traccar_imei": ["is", "set"]}, pluck="name"
+	custom_cron_vehicles = frappe.get_all(
+		"Vehicle",
+		{"disabled": 0, "traccar_imei": ["is", "set"], "poll_frequency": ["is", "set"]},
+		pluck="name",
+	)
+
+	other_vehicles = frappe.get_all(
+		"Vehicle",
+		{"disabled": 0, "traccar_imei": ["is", "set"], "poll_frequency": ["is", "not set"]},
+		pluck="name",
+	)
+
+	for v in custom_cron_vehicles:
+		v_doc = frappe.get_doc("Vehicle", v)
+		schedule_poll_frequency(v_doc, update=True)
+
+	for v in other_vehicles:
+		sync_vehicle(v, traccar_settings=traccar_settings)
+
+
+def sync_vehicle(vehicle, traccar_settings=None):
+	if not traccar_settings:
+		traccar_settings = frappe.get_cached_doc("Traccar Integration", "Traccar Integration")
+
+	if not traccar_settings or not traccar_settings.enable_traccar:
+		return
+
+	vehicle_doc = frappe.get_doc("Vehicle", vehicle)
+	try:
+		position = get_vehicle_position(vehicle_doc)
+		if not position:
+			frappe.log_error(
+				_("No position data found for vehicle {0}").format(vehicle), "Traccar Integration Error"
+			)
+		log = create_vehicle_log(vehicle_doc, position)
+
+	except Exception as e:
+		frappe.log_error(
+			frappe.get_traceback(), _("Failed to sync vehicle {0} with Traccar").format(vehicle)
 		)
-	else:
-		vehicles = [vehicle]
-
-	for v in vehicles:
-		vehicle_doc = frappe.get_doc("Vehicle", v)
-		try:
-			position = get_vehicle_position(vehicle_doc)
-			if not position:
-				frappe.log_error(
-					_("No position data found for vehicle {0}").format(v), "Traccar Integration Error"
-				)
-			log = create_vehicle_log(vehicle_doc, position)
-
-		except Exception as e:
-			frappe.log_error(frappe.get_traceback(), _("Failed to sync vehicle {0} with Traccar").format(v))
 
 
 def get_vehicle_position(vehicle_doc):
