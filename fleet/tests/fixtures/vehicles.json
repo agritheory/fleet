@@ -13,7 +13,7 @@
 		"registration_expiration_date": "2025-04-30",
 		"toll_tag_number": "N/A",
 		"vehicle_details": "77HP Diesel, Front Loader, Forks",
-		"last_odometer": 645,
+		"last_odometer": 1,
 		"drive_type": "2x4",
 		"acquisition_date": "2021-09-20",
 		"column_break_8": "",
@@ -31,7 +31,9 @@
 		"column_break_21": "",
 		"color": "Orange",
 		"wheels": 4,
-		"doors": 2
+		"doors": 2,
+		"traccar_imei": "867634109582301",
+		"poll_frequency": "*/2 * * * *"
 	},
 	{
 		"doctype": "Vehicle",
@@ -47,7 +49,7 @@
 		"registration_expiration_date": "2025-08-31",
 		"toll_tag_number": "N/A",
 		"vehicle_details": "4-passenger UTV with cargo bed, LED lights package",
-		"last_odometer": 892,
+		"last_odometer": 1,
 		"drive_type": "4x4",
 		"acquisition_date": "2023-03-15",
 		"chassis_no": "BOB34XL22K1234567",
@@ -59,7 +61,8 @@
 		"color": "Orange",
 		"wheels": 4,
 		"doors": 2,
-		"notes": "Registered as Off-Highway Recreational Vehicle"
+		"notes": "Registered as Off-Highway Recreational Vehicle",
+		"traccar_imei": "867634109582302"
 	},
 	{
 		"doctype": "Vehicle",
@@ -76,7 +79,7 @@
 		"toll_tag_number": "NHEZ573819",
 		"toll_tag_state": "New Hampshire",
 		"vehicle_details": "6.5ft Bed, Towing Package",
-		"last_odometer": 187632,
+		"last_odometer": 1,
 		"drive_type": "4x4",
 		"acquisition_date": "2019-08-15",
 		"chassis_no": "1FTRX17W23NB12345",
@@ -88,7 +91,8 @@
 		"column_break_21": "",
 		"color": "Dark Green",
 		"wheels": 4,
-		"doors": 4
+		"doors": 4,
+		"traccar_imei": "867634109582303"
 	},
 	{
 		"doctype": "Vehicle",
@@ -106,7 +110,7 @@
 		"toll_tag_number": "NHEZ847263",
 		"toll_tag_state": "New Hampshire",
 		"vehicle_details": "24ft Box Truck with Liftgate",
-		"last_odometer": 78523,
+		"last_odometer": 1,
 		"drive_type": "2x4",
 		"acquisition_date": "2022-06-12",
 		"chassis_no": "1GC5KUEY2KF123456",
@@ -116,6 +120,7 @@
 		"carbon_check_date": "2024-02-15",
 		"color": "Arctic White",
 		"wheels": 6,
-		"doors": 2
+		"doors": 2,
+		"traccar_imei": "867634109582304"
 	}
 ]

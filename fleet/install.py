@@ -5,9 +5,8 @@ import os
 import subprocess
 import types
 
-import pycountry
-
 import frappe
+import pycountry
 from frappe.installer import update_site_config
 
 
@@ -63,6 +62,7 @@ def create_traccar_user():
 		u.email = "Traccar@agritheory.dev"
 		u.username = "traccar"
 		u.first_name = "Traccar"
+		u.send_welcome_email = 0
 		u._validate_data_fields = types.MethodType(_bypass, u)
 		u.save()
 		frappe.model.rename_doc.rename_doc(

@@ -9,17 +9,16 @@
 		"server_info_section",
 		"traccar_server_url",
 		"encoded_credentials",
+		"traccar_distance_uom",
+		"erpnext_distance_uom",
+		"distance_conversion_factor",
 		"column_break_ewch",
 		"username",
 		"password",
 		"notifications_tab",
 		"notification_settings_section",
 		"external_battery_low_threshold",
-		"battery_level_notification",
-		"frequency_tab",
-		"gps_poll_frequency",
-		"column_break_awnn",
-		"odometer_poll_frequency"
+		"battery_level_notification"
 	],
 	"fields": [
 		{
@@ -87,36 +86,36 @@
 			"label": "Notifications"
 		},
 		{
-			"fieldname": "frequency_tab",
-			"fieldtype": "Tab Break",
-			"label": "Frequency"
-		},
-		{
-			"description": "<pre>*  *  *  *  *\n\u252c  \u252c  \u252c  \u252c  \u252c\n\u2502  \u2502  \u2502  \u2502  \u2502\n\u2502  \u2502  \u2502  \u2502  \u2514 day of week (0 - 6) (0 is Sunday)\n\u2502  \u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500 month (1 - 12)\n\u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 day of month (1 - 31)\n\u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 hour (0 - 23)\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 minute (0 - 59)\n\n--- <a target=\"_blank\" href=\"crontab.guru\">crontab format reference</a>\n</pre>",
-			"fieldname": "gps_poll_frequency",
-			"fieldtype": "Data",
-			"label": "GPS Poll Frequency"
-		},
-		{
-			"fieldname": "column_break_awnn",
-			"fieldtype": "Column Break"
-		},
-		{
-			"description": "<pre>*  *  *  *  *\n\u252c  \u252c  \u252c  \u252c  \u252c\n\u2502  \u2502  \u2502  \u2502  \u2502\n\u2502  \u2502  \u2502  \u2502  \u2514 day of week (0 - 6) (0 is Sunday)\n\u2502  \u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500 month (1 - 12)\n\u2502  \u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 day of month (1 - 31)\n\u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 hour (0 - 23)\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 minute (0 - 59)\n\n--- <a target=\"_blank\" href=\"crontab.guru\">crontab format reference</a>\n</pre>",
-			"fieldname": "odometer_poll_frequency",
-			"fieldtype": "Data",
-			"label": "Odometer Poll Frequency"
-		},
-		{
 			"fieldname": "battery_level_notification",
 			"fieldtype": "Link",
 			"label": "Battery Level Notification",
 			"options": "Notification"
+		},
+		{
+			"fieldname": "traccar_distance_uom",
+			"fieldtype": "Link",
+			"label": "Traccar Distance UoM",
+			"options": "UOM"
+		},
+		{
+			"description": "Distance UoM for Vehicle Odometer and Delivery Trips",
+			"fieldname": "erpnext_distance_uom",
+			"fieldtype": "Link",
+			"label": "ERPNext Distance UoM",
+			"options": "UOM"
+		},
+		{
+			"depends_on": "eval:doc.traccar_distance_uom != doc.erpnext_distance_uom",
+			"fieldname": "distance_conversion_factor",
+			"fieldtype": "Link",
+			"label": "Distance Conversion Factor",
+			"mandatory_depends_on": "eval:doc.traccar_distance_uom != doc.erpnext_distance_uom",
+			"options": "UOM Conversion Factor"
 		}
 	],
 	"issingle": 1,
 	"links": [],
-	"modified": "2024-12-03 15:44:54.051586",
+	"modified": "2025-03-19 14:46:04.305632",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "Traccar Integration",

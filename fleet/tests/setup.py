@@ -1,14 +1,24 @@
 # Copyright (c) 2024, AgriTheory and contributors
 # For license information, please see license.txt
-from pathlib import Path
-import json
 
+
+import copy
+import json
+import os
 import unicodedata
+from pathlib import Path
 
 import frappe
 from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
 from frappe.utils.data import getdate
 from test_utils.utils.chart_of_accounts import setup_chart_of_accounts
+
+from fleet.tests.fixtures.locations_and_routes import (
+	farm_geojson,
+	locations,
+	point_template_geojson,
+	routes,
+)
 
 
 def before_test(company_name=None):
@@ -59,8 +69,6 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	settings.company_account = frappe.get_value(
 		"Account", {"account_type": "Bank", "company": company_name, "is_group": 0}
 	)
-	setup_farm_price_list()
-	create_farm_shifts()
 	company_address = frappe.new_doc("Address")
 	company_address.title = settings.company
 	company_address.address_type = "Office"
@@ -75,8 +83,42 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	co.tax_id = "04-9000561"
 	co.domain = "quincycloudberry.farm"
 	co.save()
+
+	create_traccar_integration()
+	create_farm_shifts()
 	create_farm_employees()
 	setup_farm_price_list()
+	create_customers()
+	create_suppliers()
+	create_vehicles()
+	create_vehicle_logs()
+	create_locations()
+
+
+def create_traccar_integration():
+	f = "Meter"
+	t = "Mile"
+	if frappe.db.exists("UOM Conversion Factor", {"from_uom": f, "to_uom": t}):
+		uomcf = frappe.get_doc("UOM Conversion Factor", {"from_uom": f, "to_uom": t})
+	else:
+		uomcf = frappe.new_doc("UOM Conversion Factor")
+		uomcf.category = "Length"
+		uomcf.from_uom = f
+		uomcf.to_uom = t
+		uomcf.value = 0.000621000
+		uomcf.save()
+
+	if os.environ.get("TRACCAR_USERNAME") and os.environ.get("TRACCAR_PASSWORD"):
+		ti = frappe.new_doc("Traccar Integration")
+		ti.enable_traccar = 1
+		port = os.environ.get("TRACCAR_PORT") or 5055  # Default in simulate function
+		ti.traccar_server_url = f"http://localhost:{port}"
+		ti.username = os.environ.get("TRACCAR_USERNAME")
+		ti.password = os.environ.get("TRACCAR_PASSWORD")
+		ti.traccar_distance_uom = "Kilometer"
+		ti.erpnext_distance_uom = "Mile"
+		ti.distance_conversion_factor = uomcf.name
+		ti.save()
 
 
 def create_farm_shifts():
@@ -361,6 +403,7 @@ def create_employees(settings, employees):
 		user.time_zone = "America/New_York"
 		user.email = f"""{unicodedata.normalize('NFKD', user.first_name[0].lower())}{unicodedata.normalize('NFKD', user.last_name.replace("'", "").lower())}@{company_domain}"""
 		user.user_type = "System User"
+		user.send_welcome_email = 0
 		user.append("roles", {"role": "Employee Self Service"})
 		if "roles" in employee:
 			for role in employee.get("roles"):
@@ -414,37 +457,6 @@ def create_employees(settings, employees):
 				create_driver(emp)
 
 
-def create_vehicles():
-	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
-	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
-	drivers = frappe.get_all("Driver", pluck="name")
-	driver_idx = 0
-	for idx, vehicle in enumerate(vehicles):
-		if frappe.db.exists("Vehicle", vehicle.get("name")):
-			continue
-		doc = frappe.new_doc("Vehicle")
-		doc.update(vehicle)
-		doc.start_date = getdate().replace(day=1)
-		doc.end_date = doc.start_date.replace(month=(doc.start_date.month + 1) % 13)
-		doc.insurance_company = "Cooperative Insurance Company"
-		doc.append("drivers", {"driver": drivers[driver_idx]})
-		doc.append("drivers", {"driver": drivers[driver_idx - 1]})
-		if idx % 2:
-			driver_idx += 1
-			doc.append("drivers", {"driver": drivers[driver_idx]})
-		doc.save()
-
-
-def create_locations():
-	# state parks or forests in New Hampshire
-	# farm (Concord)
-	pass
-
-
-def create_vehicle_logs():
-	pass
-
-
 def create_driver(emp):
 	driver = frappe.new_doc("Driver")
 	driver.status = "Active"
@@ -474,7 +486,68 @@ def create_driver(emp):
 	driver.save()
 
 
-def create_suppliers(settings):
+def create_vehicles():
+	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
+	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
+	drivers = frappe.get_all("Driver", pluck="name")
+	driver_idx = 0
+	n_drivers = len(drivers)
+	for idx, vehicle in enumerate(vehicles):
+		if frappe.db.exists("Vehicle", vehicle.get("name")):
+			continue
+		doc = frappe.new_doc("Vehicle")
+		doc.update(vehicle)
+		doc.start_date = getdate().replace(day=1)
+		doc.end_date = doc.start_date.replace(month=(doc.start_date.month + 1) % 13)
+		doc.insurance_company = "Cooperative Insurance Company"
+		doc.append("drivers", {"driver": drivers[driver_idx % n_drivers]})
+		doc.append("drivers", {"driver": drivers[(driver_idx - 2) % n_drivers]})
+		driver_idx += 1
+		doc.save()
+
+
+def create_vehicle_logs():
+	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
+	vehicle_logs = json.loads((fixtures_directory / "vehicle_logs.json").read_text(encoding="UTF-8"))
+	vehicle_locations = frappe._dict({r["vehicle"]: r["route"][0] for r in routes})
+	for vehicle_log in vehicle_logs:
+		vehicle = frappe.get_doc("Vehicle", vehicle_log["license_plate"])
+		lat, lon = vehicle_locations[vehicle.name]
+		vd = vehicle.drivers[0].driver
+		driver_emp = frappe.get_value("Driver", vd, "employee")
+		vl = frappe.new_doc("Vehicle Log")
+		vl.update(vehicle_log)
+		vl.employee = driver_emp
+		vl.model = vehicle.model
+		vl.make = vehicle.make
+		vl.date = frappe.utils.getdate()
+		vl.latitude = lat
+		vl.longitude = lon
+		vl.save()
+		vl.submit()
+
+
+def create_customers():
+	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
+	customers = json.loads((fixtures_directory / "customers.json").read_text(encoding="UTF-8"))
+	for customer in customers:
+		if frappe.db.exists("Customer", customer.get("customer_name")):
+			continue
+		if not frappe.db.exists("Customer Group", customer.get("customer_group")):
+			cg = frappe.new_doc("Customer Group")
+			cg.customer_group_name = customer.get("customer_group")
+			cg.parent_customer_group = "All Customer Groups"
+			cg.save()
+		c = frappe.new_doc("Customer")
+		c.customer_name = customer.get("customer_name")
+		c.customer_type = customer.get("customer_type")
+		c.customer_group = customer.get("customer_group")
+		c.tax_id = customer.get("tax_id")
+		c.territory = customer.get("territory")
+		c.save()
+
+
+def create_suppliers():
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	suppliers = json.loads((fixtures_directory / "supplier.json").read_text(encoding="UTF-8"))
 	for supplier in suppliers:
@@ -490,6 +563,47 @@ def create_suppliers(settings):
 		doc.save()
 
 
-def create_customers(settings):
-	pass
-	# captive customers
+def create_locations():
+	# Create the Farm parent location (GeoJSON with polygon and points)
+	f_lat, f_lon = locations.get("Farm Office")
+	farm_loc_keys = [k for k in locations.keys() if k.startswith("Farm")]
+	for key in farm_loc_keys:
+		lat, lon = locations.get(key)
+		feat = copy.deepcopy(point_template_geojson["features"][0])
+		feat["properties"]["name"] = key
+		feat["properties"]["description"] = key
+		feat["geometry"]["coordinates"] = [lon, lat]  # geojson uses lon, lat order
+		farm_geojson["features"].append(feat)
+
+	farm_l = frappe.new_doc("Location")
+	farm_l.location_name = "Farm"
+	farm_l.is_group = 1
+	farm_l.latitude = f_lat
+	farm_l.longitude = f_lon
+	farm_l.location = json.dumps(farm_geojson)
+	farm_l.save()
+
+	# Create Farm and Customer locations (GeoJSON with point only)
+	customers = frappe.get_all(
+		"Customer", ["customer_name"], order_by="creation", pluck="customer_name"
+	)
+	for key, coords in locations.items():
+		lat, lon = coords
+		name = key
+		if key.startswith("Customer"):
+			idx = int(key.split()[-1]) - 1
+			name = customers[idx]
+
+		geojson = copy.deepcopy(point_template_geojson)
+		geojson["features"][0]["properties"]["name"] = name
+		geojson["features"][0]["properties"]["description"] = name
+		geojson["features"][0]["geometry"]["coordinates"] = [lon, lat]
+
+		l = frappe.new_doc("Location")
+		l.location_name = name
+		if key.startswith("Farm"):
+			l.parent_location = farm_l.name
+		l.latitude = lat
+		l.longitude = lon
+		l.location = json.dumps(geojson)
+		l.save()
