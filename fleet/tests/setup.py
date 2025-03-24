@@ -9,6 +9,7 @@ import unicodedata
 from pathlib import Path
 
 import frappe
+import frappe.defaults
 from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
 from frappe.utils.data import getdate
 from test_utils.utils.chart_of_accounts import setup_chart_of_accounts
@@ -30,6 +31,7 @@ def before_test(company_name=None):
 			"full_name": "Administrator",
 			"company_name": "Quincy Cloudberry Farm",
 			"timezone": "America/New_York",
+			"time_zone": "America/New_York",
 			"company_abbr": "QCF",
 			"domains": ["Distribution"],
 			"country": "United States",
@@ -52,6 +54,11 @@ def before_test(company_name=None):
 
 def create_test_data(company_name="Quincy Cloudberry Farm"):
 	setup_chart_of_accounts(company=company_name, chart_template="Farm")
+	default_currency = "USD"
+	for account in frappe.get_all("Account"):
+		frappe.db.set_value(
+			"Account", account, "account_currency", default_currency, update_modified=False
+		)
 
 	settings = frappe._dict(
 		{
@@ -90,9 +97,10 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	setup_farm_price_list()
 	create_customers()
 	create_suppliers()
+	create_asset_categories_and_item_groups(settings)
+	create_locations()
 	create_vehicles()
 	create_vehicle_logs()
-	create_locations()
 
 
 def create_traccar_integration():
@@ -486,7 +494,32 @@ def create_driver(emp):
 	driver.save()
 
 
-def create_vehicles():
+def create_asset_categories_and_item_groups(settings=None):
+	company = frappe.defaults.get_defaults().company if not settings else settings.company
+	if not frappe.db.exists("Asset Category", "Vehicle"):
+		at = frappe.new_doc("Asset Category")
+		at.asset_category_name = "Vehicle"
+		at.append(
+			"accounts",
+			{
+				"company_name": company,
+				"fixed_asset_account": "1710 - Capital Equipment - QCF",
+				"accumulated_depreciation_account": "1780 - Accumulated Depreciation - QCF",
+				"depreciation_expense_account": "5303 - Depreciation - QCF",
+				"capital_work_in_progress_account": "1790 - CWIP Account - QCF",
+			},
+		)
+		at.save()
+
+	if not frappe.db.exists("Item Group", "Vehicle"):
+		ig = frappe.new_doc("Item Group")
+		ig.item_group_name = "Vehicle"
+		ig.parent_item_group = "All Item Groups"
+		ig.save()
+
+
+def create_vehicles(settings=None):
+	company = frappe.defaults.get_defaults().company if not settings else settings.company
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
 	drivers = frappe.get_all("Driver", pluck="name")
@@ -505,8 +538,40 @@ def create_vehicles():
 		driver_idx += 1
 		doc.save()
 
+		# Create an Item
+		item = frappe.new_doc("Item")
+		item.item_code = doc.name
+		item.item_name = doc.name
+		item.description = f"{doc.make}: {doc.vehicle_details}"
+		item.item_group = "Vehicle"
+		item.is_stock_item = 0
+		item.stock_uom = "Nos"
+		item.is_fixed_asset = 1
+		item.asset_category = "Vehicle"
+		item.save()
 
-def create_vehicle_logs():
+		# Create an Asset
+		a = frappe.new_doc("Asset")
+		a.company = company
+		a.item_code = item.item_code
+		a.asset_name = item.item_code
+		a.location = "Farm Garage"
+		a.asset_owner = "Company"
+		a.asset_owner_company = company
+		a.is_existing_asset = 1
+		a.cost_center = "Main - QCF"
+		a.purchase_date = a.available_for_use_date = doc.acquisition_date
+		a.gross_purchase_amount = doc.vehicle_value
+		a.policy_number = doc.policy_no
+		a.insurer = doc.insurance_company
+		a.insurance_start_date = doc.start_date
+		a.insurance_end_date = doc.end_date
+		a.maintenance_required = 1
+		a.save()
+		a.submit()
+
+
+def create_vehicle_logs(settings=None):
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	vehicle_logs = json.loads((fixtures_directory / "vehicle_logs.json").read_text(encoding="UTF-8"))
 	vehicle_locations = frappe._dict({r["vehicle"]: r["route"][0] for r in routes})
@@ -527,7 +592,7 @@ def create_vehicle_logs():
 		vl.submit()
 
 
-def create_customers():
+def create_customers(settings=None):
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	customers = json.loads((fixtures_directory / "customers.json").read_text(encoding="UTF-8"))
 	for customer in customers:
@@ -547,7 +612,7 @@ def create_customers():
 		c.save()
 
 
-def create_suppliers():
+def create_suppliers(settings=None):
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	suppliers = json.loads((fixtures_directory / "supplier.json").read_text(encoding="UTF-8"))
 	for supplier in suppliers:
@@ -563,7 +628,7 @@ def create_suppliers():
 		doc.save()
 
 
-def create_locations():
+def create_locations(settings=None):
 	# Create the Farm parent location (GeoJSON with polygon and points)
 	f_lat, f_lon = locations.get("Farm Office")
 	farm_loc_keys = [k for k in locations.keys() if k.startswith("Farm")]
