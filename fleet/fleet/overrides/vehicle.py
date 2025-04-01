@@ -38,6 +38,18 @@ class FleetVehicle(Vehicle):
 			"Vehicle Log", {"license_plate": self.name}, "battery_level", order_by="creation DESC"
 		)
 
+	@property
+	def most_recent_driver(self):
+		driver_emp = frappe.db.get_value(
+			"Vehicle Log",
+			{"license_plate": self.name},
+			["employee"],
+			order_by="creation DESC",
+		)
+		driver_docname = frappe.get_value("Driver", {"employee": driver_emp})
+		driver_emp_name = frappe.get_value("Employee", driver_emp, "employee_name")
+		return driver_docname, driver_emp_name
+
 
 def check_schedule_poll_frequency(doc, method=None):
 	old_value = doc.get_db_value("poll_frequency")

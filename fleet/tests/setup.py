@@ -10,12 +10,16 @@ from pathlib import Path
 
 import frappe
 import frappe.defaults
+from frappe import _
 from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+from frappe.exceptions import ValidationError
 from frappe.utils.data import getdate
 from test_utils.utils.chart_of_accounts import setup_chart_of_accounts
 
+from fleet.fleet.traccar import get_traccar_driver, link_traccar_object
 from fleet.tests.fixtures.locations_and_routes import (
 	farm_geojson,
+	geofences,
 	locations,
 	point_template_geojson,
 	routes,
@@ -98,9 +102,9 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	create_customers()
 	create_suppliers()
 	create_asset_categories_and_item_groups(settings)
-	create_locations()
 	create_vehicles()
 	create_vehicle_logs()
+	create_locations()
 
 
 def create_traccar_integration():
@@ -525,6 +529,7 @@ def create_vehicles(settings=None):
 	drivers = frappe.get_all("Driver", pluck="name")
 	driver_idx = 0
 	n_drivers = len(drivers)
+
 	for idx, vehicle in enumerate(vehicles):
 		if frappe.db.exists("Vehicle", vehicle.get("name")):
 			continue
@@ -569,6 +574,21 @@ def create_vehicles(settings=None):
 		a.maintenance_required = 1
 		a.save()
 		a.submit()
+
+		# Link drivers to vehicle in Traccar
+		for d in doc.drivers:
+			d_name = d.driver
+			driver = get_traccar_driver(d_name)
+			if driver and doc.traccar_id:
+				try:
+					link_traccar_object("deviceId", doc.traccar_id, "driverId", driver["id"])
+				except ValidationError:
+					frappe.log_error(
+						title=_(f"Error linking Driver {d_name} to Vehicle {doc.name} in Traccar"),
+						message=_(frappe.get_traceback()),
+						reference_doctype="Vehicle",
+						reference_name=doc.name,
+					)
 
 
 def create_vehicle_logs(settings=None):
@@ -663,6 +683,9 @@ def create_locations(settings=None):
 		geojson["features"][0]["properties"]["name"] = name
 		geojson["features"][0]["properties"]["description"] = name
 		geojson["features"][0]["geometry"]["coordinates"] = [lon, lat]
+		geofence_feat = geofences.get(key)
+		if geofence_feat:
+			geojson["features"].append(geofence_feat["feature"])
 
 		l = frappe.new_doc("Location")
 		l.location_name = name
@@ -670,5 +693,21 @@ def create_locations(settings=None):
 			l.parent_location = farm_l.name
 		l.latitude = lat
 		l.longitude = lon
+		l.sync_traccar_geofence = 1 if geofence_feat else 0
 		l.location = json.dumps(geojson)
 		l.save()
+
+		# Link device (Vehicle) to Geofence
+		if geofence_feat:
+			geofence_id = l.traccar_geofence_id
+			device_id = frappe.get_value("Vehicle", geofence_feat["vehicle"], "traccar_id")
+			if geofence_id and device_id:
+				try:
+					link_traccar_object("deviceId", device_id, "geofenceId", geofence_id)
+				except ValidationError:
+					frappe.log_error(
+						title=_(f"Error linking Geofence to Vehicle {geofence_feat['vehicle']} in Traccar"),
+						message=_(frappe.get_traceback()),
+						reference_doctype="Location",
+						reference_name=l.name,
+					)

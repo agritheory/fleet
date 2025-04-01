@@ -362,6 +362,133 @@ def add_traccar_driver(driver_doc, method=None):
 		frappe.throw(_("Traccar server error: {0}").format(str(e)))
 
 
+def get_traccar_geofences(device_uniqid=None, traccar_gf_id=None):
+	"""
+	Collects geofences associated with the device's unique ID from Traccar.
+
+	:param device_uniqid: str | None; Traccar uniqueID for a device (Traccar IMEI on Vehicle)
+	:param traccar_gf_id: int | None; the Traccar ID field on the geofence
+	:return: list; geofence data JSON objects if successful, None with raised error if not
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	api_url = f"?deviceId={device_uniqid}" if device_uniqid else ""
+	try:
+		response = requests.get(
+			urljoin(traccar_server_url, "/api/geofences" + api_url),
+			headers=headers,
+			timeout=10,
+		)
+		response.raise_for_status()
+		geofences = response.json()
+		if traccar_gf_id:
+			geofences = [g for g in geofences if g["id"] == traccar_gf_id]
+		return geofences
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Failed to connect to Traccar server: {0}").format(str(e)))
+
+
+def add_traccar_geofence(doc, shape, coords, device_uniqid=None, group_id=None):
+	"""
+	Adds a geofence to Traccar. If `device_uniqid` or `group_id` are provided, will link all
+	devices and groups to the geofence.
+
+	:param doc: doc creating geofence from (either Location or Address)
+	:param shape: str; Traccar only supports polygon and polyline shapes
+	:param coords: non-nested sequence of coordinates that defines the shape
+	:param device_uniqid: str | sequence | None; Traccar uniqueID (Traccar IMEI on Vehicle) for
+	any devices to link to the new geofence
+	:param group_id: str | sequence | None; Traccar groupId for any device groups to link to the
+	new geofence
+	:return: None (error raised if unsuccessful)
+
+	Traccar only requires the name and area keys to create a new geofence. Area is a string in
+	Well-Known Text (WKT) format to represent the geometry. Examples:
+	"POLYGON ((lat1 lon1, lat2 lon2, lat3 lon3, lat1 lon1))"
+	"LINESTRING (lat1 lon1, lat2 lon2, lat3 lon3)"
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	if shape.lower() not in ["polygon", "linestring"]:
+		frappe.throw(
+			_(
+				f"Invalid shape of {shape}. Traccar only supports Polygon or Polyline (LineString) shapes for new geofences."
+			)
+		)
+	if device_uniqid and isinstance(device_uniqid, str):
+		device_uniqid = [device_uniqid]
+	if group_id and isinstance(group_id, str):
+		group_id = [group_id]
+
+	try:
+		area = coords_list_to_wkt_format(shape, coords)
+		data = {
+			"name": f"{doc.doctype}|{doc.name}",
+			"description": f"{doc.doctype}|{doc.name}",
+			"area": area,
+			"attributes": {},
+		}
+		response = requests.post(
+			urljoin(traccar_server_url, "/api/geofences"),
+			headers=headers,
+			timeout=10,
+			data=json.dumps(data),
+		)
+		response.raise_for_status()
+		r = response.json()
+		if r and r["id"]:
+			if device_uniqid:
+				for did in device_uniqid:
+					link_traccar_object("deviceId", did, "geofenceId", r["id"])
+			if group_id:
+				for gid in group_id:
+					link_traccar_object("groupId", gid, "geofenceId", r["id"])
+			return r["id"]
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def link_traccar_object(first_param_key, first_param_val, second_param_key, second_param_val):
+	"""
+	Links one object to another in Traccar.
+
+	:param first_param_key: str; must be "userId", "deviceId", or "groupId"
+	:param first_param_val: the ID of the user, device, or group that links to second param
+	:param second_param_key: str; see Traccar permissions API reference for valid keys
+	https://www.traccar.org/api-reference/#tag/Permissions
+	:param second_param_val: the ID of the other key that links to first param
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	if first_param_key not in ["userId", "deviceId", "groupId"]:
+		frappe.throw(
+			_(
+				f"Invalid first parameter key name of {first_param_key}. Must by 'userId', 'deviceId', or 'groupId'."
+			)
+		)
+	try:
+		data = {first_param_key: first_param_val, second_param_key: second_param_val}
+		response = requests.post(
+			urljoin(traccar_server_url, "/api/permissions"),
+			headers=headers,
+			timeout=10,
+			data=json.dumps(data),
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
 def create_draft_asset_repair(asset_name, description):
 	company, cost_center = frappe.db.get_value("Asset", asset_name, ["company", "cost_center"])
 	ar = frappe.new_doc("Asset Repair")
@@ -413,3 +540,20 @@ def get_distance_conversion_factor():
 	traccar_settings = frappe.get_cached_doc("Traccar Integration", "Traccar Integration")
 	dist_cf = traccar_settings.distance_conversion_factor
 	return frappe.get_value("UOM Conversion Factor", dist_cf, "value") if dist_cf else 1
+
+
+def coords_list_to_wkt_format(shape, coords):
+	"""
+	Creates a Well-Known Text string to represent the geometry of the given shape and coords.
+	Wikipedia reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry
+
+	:param shape: string; either LINESTRING or POLYGON
+	:param coords: sequence of sequences containing coordinate pairs describing the given shape
+	:return: a WKT-formatted string with given shape's geometry
+	"""
+	coord_string = ", ".join([f"{lat} {lon}" for lat, lon in coords])
+	if shape.lower() == "linestring":
+		area = f"{shape.upper()} ({coord_string})"
+	else:
+		area = f"{shape.upper()} (({coord_string}))"
+	return area

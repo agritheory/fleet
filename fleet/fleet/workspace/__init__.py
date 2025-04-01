@@ -16,7 +16,9 @@ def get_coords() -> dict[str, Any]:
 	bounds = {"minLat": 90, "maxLat": -90, "minLng": 180, "maxLng": -180}
 
 	for vehicle in vs:
-		gps_location = frappe.get_doc("Vehicle", vehicle).gps_location
+		v = frappe.get_doc("Vehicle", vehicle)
+		gps_location = v.gps_location
+		driver_docname, driver_emp_name = v.most_recent_driver
 		if not gps_location:
 			continue
 
@@ -33,7 +35,7 @@ def get_coords() -> dict[str, Any]:
 				"geometry": location["features"][0]["geometry"],
 				"properties": {
 					"name": f'<a href="/app/vehicle/{vehicle.name}">{vehicle.name}</a>',
-					# "driver": f'<a href="/app/vehicle/{vehicle.driver}">{vehicle.driver}</a>',
+					"driver": f'<a href="/app/driver/{driver_docname}">{driver_emp_name}</a>',
 				},
 			}
 			features.append(feature)

@@ -159,6 +159,11 @@ doc_events = {
 			"fleet.fleet.traccar.add_traccar_driver",
 		]
 	},
+	"Location": {
+		"validate": [
+			"fleet.fleet.overrides.location.sync_traccar_geofence",
+		]
+	},
 }
 
 # Scheduled Tasks
