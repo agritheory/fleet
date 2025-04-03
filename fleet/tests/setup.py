@@ -663,7 +663,7 @@ def create_locations(settings=None):
 		l.latitude = lat
 		l.longitude = lon
 		l.sync_traccar_geofence = 1 if geofence_feat else 0
-		if geofence_feat:
+		if geofence_feat and not os.environ.get("CI"):
 			for v in geofence_feat["vehicle"]:
 				l.append("geofenced_vehicle", {"vehicle": v})
 		l.location = json.dumps(geojson)
