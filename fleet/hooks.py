@@ -161,6 +161,7 @@ doc_events = {
 	},
 	"Location": {
 		"validate": [
+			"fleet.fleet.overrides.location.validate_geofenced_vehicles_have_traccar_id",
 			"fleet.fleet.overrides.location.sync_traccar_geofence",
 		]
 	},

@@ -391,18 +391,16 @@ def get_traccar_geofences(device_uniqid=None, traccar_gf_id=None):
 		frappe.throw(_("Failed to connect to Traccar server: {0}").format(str(e)))
 
 
-def add_traccar_geofence(doc, shape, coords, device_uniqid=None, group_id=None):
+def add_traccar_geofence(doc, shape, coords, device_ids=None, group_ids=None):
 	"""
-	Adds a geofence to Traccar. If `device_uniqid` or `group_id` are provided, will link all
-	devices and groups to the geofence.
+	Adds a geofence to Traccar. If `device_ids` or `group_ids` are provided, will link all devices
+	and groups to the geofence.
 
 	:param doc: doc creating geofence from (either Location or Address)
 	:param shape: str; Traccar only supports polygon and polyline shapes
 	:param coords: non-nested sequence of coordinates that defines the shape
-	:param device_uniqid: str | sequence | None; Traccar uniqueID (Traccar IMEI on Vehicle) for
-	any devices to link to the new geofence
-	:param group_id: str | sequence | None; Traccar groupId for any device groups to link to the
-	new geofence
+	:param device_ids: str | sequence | None; Traccar deviceId for devices to link to the geofence
+	:param group_ids: str | sequence | None; Traccar groupId for groups to link to the geofence
 	:return: None (error raised if unsuccessful)
 
 	Traccar only requires the name and area keys to create a new geofence. Area is a string in
@@ -420,16 +418,16 @@ def add_traccar_geofence(doc, shape, coords, device_uniqid=None, group_id=None):
 				f"Invalid shape of {shape}. Traccar only supports Polygon or Polyline (LineString) shapes for new geofences."
 			)
 		)
-	if device_uniqid and isinstance(device_uniqid, str):
-		device_uniqid = [device_uniqid]
-	if group_id and isinstance(group_id, str):
-		group_id = [group_id]
+	if device_ids and isinstance(device_ids, str):
+		device_ids = [device_ids]
+	if group_ids and isinstance(group_ids, str):
+		group_ids = [group_ids]
 
 	try:
 		area = coords_list_to_wkt_format(shape, coords)
 		data = {
-			"name": f"{doc.doctype}|{doc.name}",
-			"description": f"{doc.doctype}|{doc.name}",
+			"name": doc.name,
+			"description": doc.name,
 			"area": area,
 			"attributes": {},
 		}
@@ -442,11 +440,11 @@ def add_traccar_geofence(doc, shape, coords, device_uniqid=None, group_id=None):
 		response.raise_for_status()
 		r = response.json()
 		if r and r["id"]:
-			if device_uniqid:
-				for did in device_uniqid:
+			if device_ids:
+				for did in device_ids:
 					link_traccar_object("deviceId", did, "geofenceId", r["id"])
-			if group_id:
-				for gid in group_id:
+			if group_ids:
+				for gid in group_ids:
 					link_traccar_object("groupId", gid, "geofenceId", r["id"])
 			return r["id"]
 

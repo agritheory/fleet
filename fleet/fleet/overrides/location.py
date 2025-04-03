@@ -6,20 +6,39 @@ import json
 
 import frappe
 from frappe import _
+from frappe.utils import comma_and
 
 from fleet.fleet.traccar import add_traccar_geofence
 
 
-# Should accept both location and address doctypes
+def validate_geofenced_vehicles_have_traccar_id(doc, method=None):
+	if not doc.geofenced_vehicle:
+		return
+	errors = []
+	for v in doc.geofenced_vehicle:
+		traccar_id = frappe.get_value("Vehicle", v.vehicle, "traccar_id")
+		if not traccar_id:
+			errors.append(v.vehicle)
+	if errors:
+		frappe.throw(
+			_(
+				f"Missing Traccar ID for vehicle(s) {comma_and(errors)}. This is required to link a device to the geofence."
+			)
+		)
+
+
 def sync_traccar_geofence(doc, method=None):
 	"""
 	Logic:
-	- must have sync_traccar_geofence checked
-	- if there isn't a traccar_geofence_id -> look for valid feature(s) and add to Traccar
-	  how to link new geofence to devices/groups?
-	- if there is a traccar_geofence_id -> ignore? sync? Is ERPNext source of truth, or Traccar?
+	- check if sync_traccar_geofence checked
+	- TODO: check if modified, then update either geofence or devices to link
+	- if there isn't a traccar_geofence_id -> look for valid feature(s) and add to Traccar,
+	  link vehicles in Multiselect table to new geofence
+	- if there is a traccar_geofence_id -> see if valid
+
 	"""
 	if not doc.sync_traccar_geofence:
+		# TODO: handle modifications / delete geofence if uncheck this?
 		return
 	if doc.doctype == "Address":
 		# TODO: Dynamic Link to Location? Need polygon/polyline coords for geofence
@@ -39,12 +58,15 @@ def sync_traccar_geofence(doc, method=None):
 				continue
 			coords = []
 			flatten_coordinates(coord_list=coords, item=feature["geometry"]["coordinates"])
-			# TODO: collect deviceId or groupId to link new geofence to devices?
-			geofence_id = add_traccar_geofence(doc, feat_type, coords)
-			# TODO: only stores 1 id, what to do if multiple valid shapes?
+			device_ids = []
+			if doc.geofenced_vehicle:
+				device_ids = [
+					frappe.get_value("Vehicle", v.vehicle, "traccar_id") for v in doc.geofenced_vehicle
+				]
+			geofence_id = add_traccar_geofence(doc, feat_type, coords, device_ids=device_ids)
 			doc.traccar_geofence_id = geofence_id
 	elif doc.doctype == "Location":
-		# TODO: what to do if has geofence id - sync?
+		# TODO: what to do if has geofence id - check for modifications and push updates?
 		return
 
 
@@ -66,8 +88,3 @@ def flatten_coordinates(coord_list, item, type=float):
 	else:
 		for i in item:
 			flatten_coordinates(coord_list, i, type=type)
-
-
-def wkt_format_to_geojson(wkt_string):
-	# TODO: needed to sync Traccar area string to Location GeoJSON
-	pass
