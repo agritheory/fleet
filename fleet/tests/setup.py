@@ -105,6 +105,7 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	create_vehicles()
 	create_vehicle_logs()
 	create_locations()
+	create_items_and_assets(settings)
 
 
 def create_traccar_integration():
@@ -523,7 +524,6 @@ def create_asset_categories_and_item_groups(settings=None):
 
 
 def create_vehicles(settings=None):
-	company = frappe.defaults.get_defaults().company if not settings else settings.company
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
 	drivers = frappe.get_all("Driver", pluck="name")
@@ -543,38 +543,6 @@ def create_vehicles(settings=None):
 		driver_idx += 1
 		doc.save()
 
-		# Create an Item
-		item = frappe.new_doc("Item")
-		item.item_code = doc.name
-		item.item_name = doc.name
-		item.description = f"{doc.make}: {doc.vehicle_details}"
-		item.item_group = "Vehicle"
-		item.is_stock_item = 0
-		item.stock_uom = "Nos"
-		item.is_fixed_asset = 1
-		item.asset_category = "Vehicle"
-		item.save()
-
-		# Create an Asset
-		a = frappe.new_doc("Asset")
-		a.company = company
-		a.item_code = item.item_code
-		a.asset_name = item.item_code
-		a.location = "Farm Garage"
-		a.asset_owner = "Company"
-		a.asset_owner_company = company
-		a.is_existing_asset = 1
-		a.cost_center = "Main - QCF"
-		a.purchase_date = a.available_for_use_date = doc.acquisition_date
-		a.gross_purchase_amount = doc.vehicle_value
-		a.policy_number = doc.policy_no
-		a.insurer = doc.insurance_company
-		a.insurance_start_date = doc.start_date
-		a.insurance_end_date = doc.end_date
-		a.maintenance_required = 1
-		a.save()
-		a.submit()
-
 		# Link drivers to vehicle in Traccar
 		for d in doc.drivers:
 			d_name = d.driver
@@ -582,10 +550,10 @@ def create_vehicles(settings=None):
 			if driver and doc.traccar_id:
 				try:
 					link_traccar_object("deviceId", doc.traccar_id, "driverId", driver["id"])
-				except ValidationError:
+				except ValidationError as e:
 					frappe.log_error(
 						title=_(f"Error linking Driver {d_name} to Vehicle {doc.name} in Traccar"),
-						message=_(frappe.get_traceback()),
+						message=_(f"{e}\n\n{frappe.get_traceback()}"),
 						reference_doctype="Vehicle",
 						reference_name=doc.name,
 					)
@@ -649,6 +617,7 @@ def create_suppliers(settings=None):
 
 
 def create_locations(settings=None):
+	# Dependent on Vehicle
 	# Create the Farm parent location (GeoJSON with polygon and points)
 	f_lat, f_lon = locations.get("Farm Office")
 	farm_loc_keys = [k for k in locations.keys() if k.startswith("Farm")]
@@ -694,20 +663,47 @@ def create_locations(settings=None):
 		l.latitude = lat
 		l.longitude = lon
 		l.sync_traccar_geofence = 1 if geofence_feat else 0
+		if geofence_feat:
+			for v in geofence_feat["vehicle"]:
+				l.append("geofenced_vehicle", {"vehicle": v})
 		l.location = json.dumps(geojson)
 		l.save()
 
-		# Link device (Vehicle) to Geofence
-		if geofence_feat:
-			geofence_id = l.traccar_geofence_id
-			device_id = frappe.get_value("Vehicle", geofence_feat["vehicle"], "traccar_id")
-			if geofence_id and device_id:
-				try:
-					link_traccar_object("deviceId", device_id, "geofenceId", geofence_id)
-				except ValidationError:
-					frappe.log_error(
-						title=_(f"Error linking Geofence to Vehicle {geofence_feat['vehicle']} in Traccar"),
-						message=_(frappe.get_traceback()),
-						reference_doctype="Location",
-						reference_name=l.name,
-					)
+
+def create_items_and_assets(settings=None):
+	# Dependent on Vehicle and Location
+	company = frappe.defaults.get_defaults().company if not settings else settings.company
+	for v in frappe.get_all("Vehicle"):
+		doc = frappe.get_doc("Vehicle", v)
+
+		# Create an Item
+		item = frappe.new_doc("Item")
+		item.item_code = doc.name
+		item.item_name = doc.name
+		item.description = f"{doc.make}"
+		item.item_group = "Vehicle"
+		item.is_stock_item = 0
+		item.stock_uom = "Nos"
+		item.is_fixed_asset = 1
+		item.asset_category = "Vehicle"
+		item.save()
+
+		# Create an Asset
+		a = frappe.new_doc("Asset")
+		a.company = company
+		a.item_code = item.item_code
+		a.asset_name = item.item_code
+		a.location = "Farm Garage"
+		a.asset_owner = "Company"
+		a.asset_owner_company = company
+		a.is_existing_asset = 1
+		a.cost_center = "Main - QCF"
+		a.purchase_date = a.available_for_use_date = doc.acquisition_date
+		a.gross_purchase_amount = doc.vehicle_value
+		a.policy_number = doc.policy_no
+		a.insurer = doc.insurance_company
+		a.insurance_start_date = doc.start_date
+		a.insurance_end_date = doc.end_date
+		a.maintenance_required = 1
+		a.save()
+		a.submit()

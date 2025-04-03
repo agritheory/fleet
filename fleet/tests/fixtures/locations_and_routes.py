@@ -885,7 +885,7 @@ routes = [
 	},
 ]
 
-# Geometry for geofence - append to GeoJSON "features" key
+# Geometry for geofence - append to GeoJSON "features" key, link to given "vehicle"s
 geofences = {
 	"Customer 1": {
 		"feature": {
@@ -904,7 +904,7 @@ geofences = {
 				],
 			},
 		},
-		"vehicle": "2749813",
+		"vehicle": ["2749813"],
 	},
 	"Customer 4": {
 		"feature": {
@@ -923,7 +923,7 @@ geofences = {
 				],
 			},
 		},
-		"vehicle": "3812947",
+		"vehicle": ["2749813", "3812947"],
 	},
 	"Customer 6": {
 		"feature": {
@@ -943,6 +943,6 @@ geofences = {
 				],
 			},
 		},
-		"vehicle": "2749813",
+		"vehicle": ["2749813"],
 	},
 }
