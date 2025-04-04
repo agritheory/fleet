@@ -362,12 +362,13 @@ def add_traccar_driver(driver_doc, method=None):
 		frappe.throw(_("Traccar server error: {0}").format(str(e)))
 
 
-def get_traccar_geofences(device_uniqid=None, traccar_gf_id=None):
+def get_traccar_geofences(device_uniqid=None, geofence_id=None):
 	"""
-	Collects geofences associated with the device's unique ID from Traccar.
+	Collects all geofences in Traccar. If given, collects geofences associated with either the
+	`device_uniqid` (Vehicle's Traccar IMEI) or match the `geofence_id` from Traccar.
 
 	:param device_uniqid: str | None; Traccar uniqueID for a device (Traccar IMEI on Vehicle)
-	:param traccar_gf_id: int | None; the Traccar ID field on the geofence
+	:param geofence_id: int | None; the Traccar ID field on the geofence
 	:return: list; geofence data JSON objects if successful, None with raised error if not
 	"""
 	traccar_server_url, credentials = get_server_url_and_credentials()
@@ -383,8 +384,8 @@ def get_traccar_geofences(device_uniqid=None, traccar_gf_id=None):
 		)
 		response.raise_for_status()
 		geofences = response.json()
-		if traccar_gf_id:
-			geofences = [g for g in geofences if g["id"] == traccar_gf_id]
+		if geofence_id:
+			geofences = [g for g in geofences if g["id"] == geofence_id]
 		return geofences
 
 	except requests.exceptions.RequestException as e:
@@ -452,6 +453,56 @@ def add_traccar_geofence(doc, shape, coords, device_ids=None, group_ids=None):
 		frappe.throw(_("Traccar server error: {0}").format(str(e)))
 
 
+def update_traccar_geofence(geofence_id, to_update):
+	"""
+	Updates given keys in `to_update` if geofence exists in Traccar.
+
+	:param geofence_id: str; Traccar geofence ID
+	:param to_update: dict; the key-value pairs of data to update in Traccar
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+
+	try:
+		response = requests.put(
+			urljoin(traccar_server_url, f"/api/geofences?id={geofence_id}"),
+			headers=headers,
+			timeout=10,
+			json=json.dumps(to_update),
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def delete_traccar_geofence(geofence_id):
+	"""
+	Deletes geofence in Traccar with given `geofence_id`.
+
+	:param geofence_id: int | str; Traccar geofence ID
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+
+	try:
+		response = requests.delete(
+			urljoin(traccar_server_url, f"/api/geofences?id={geofence_id}"),
+			headers=headers,
+			timeout=10,
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
 def link_traccar_object(first_param_key, first_param_val, second_param_key, second_param_val):
 	"""
 	Links one object to another in Traccar.
@@ -476,6 +527,41 @@ def link_traccar_object(first_param_key, first_param_val, second_param_key, seco
 	try:
 		data = {first_param_key: first_param_val, second_param_key: second_param_val}
 		response = requests.post(
+			urljoin(traccar_server_url, "/api/permissions"),
+			headers=headers,
+			timeout=10,
+			data=json.dumps(data),
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def unlink_traccar_object(first_param_key, first_param_val, second_param_key, second_param_val):
+	"""
+	Un-links one object from another in Traccar.
+
+	:param first_param_key: str; must be "userId", "deviceId", or "groupId"
+	:param first_param_val: the ID of the user, device, or group to un-link from second param
+	:param second_param_key: str; see Traccar permissions API reference for valid keys
+	https://www.traccar.org/api-reference/#tag/Permissions
+	:param second_param_val: the ID of the other key that un-links from first param
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	if first_param_key not in ["userId", "deviceId", "groupId"]:
+		frappe.throw(
+			_(
+				f"Invalid first parameter key name of {first_param_key}. Must by 'userId', 'deviceId', or 'groupId'."
+			)
+		)
+	try:
+		data = {first_param_key: first_param_val, second_param_key: second_param_val}
+		response = requests.delete(
 			urljoin(traccar_server_url, "/api/permissions"),
 			headers=headers,
 			timeout=10,

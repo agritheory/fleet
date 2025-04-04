@@ -6,9 +6,41 @@ import json
 
 import frappe
 from frappe import _
+from frappe.exceptions import ValidationError
 from frappe.utils import comma_and
 
-from fleet.fleet.traccar import add_traccar_geofence
+from fleet.fleet.traccar import (
+	add_traccar_geofence,
+	coords_list_to_wkt_format,
+	delete_traccar_geofence,
+	link_traccar_object,
+	unlink_traccar_object,
+	update_traccar_geofence,
+)
+
+
+def validate_geofence_geometry(doc, method=None):
+	# check for at least one valid geofence geometry, and no more than one
+	if not doc.sync_traccar_geofence:
+		return
+	loc = json.loads(doc.location)
+	if not has_valid_feature_type(loc):
+		frappe.throw(
+			_(
+				"No valid geometry features (polyline, polygon, or rectangle) found on map to use as geofence. Note that Traccar no longer supports the circle shape to create a new geofence."
+			)
+		)
+
+	gf_feature_count = 0
+	for feature in loc["features"]:
+		feat_type = feature.get("geometry", {}).get("type")
+		gf_feature_count += 1 if feat_type in ["LineString", "Polygon"] else 0
+	if gf_feature_count > 1:
+		frappe.throw(
+			_(
+				"Multiple valid features found to create a geofence in the location field - please limit to one polygon, rectangle, or polyline."
+			)
+		)
 
 
 def validate_geofenced_vehicles_have_traccar_id(doc, method=None):
@@ -29,29 +61,43 @@ def validate_geofenced_vehicles_have_traccar_id(doc, method=None):
 
 def sync_traccar_geofence(doc, method=None):
 	"""
-	Logic:
-	- check if sync_traccar_geofence checked
-	- TODO: check if modified, then update either geofence or devices to link
-	- if there isn't a traccar_geofence_id -> look for valid feature(s) and add to Traccar,
-	  link vehicles in Multiselect table to new geofence
-	- if there is a traccar_geofence_id -> see if valid
+	Syncs geofences and links vehicles to geofence if "sync_traccar_geofence" box checked.
 
+	If there's an existing synced geofence and "sync_traccar_geofence" is unchecked, deletes
+	geofence from Traccar.
+	If it's a new geofence, creates it in Traccar and links vehicles
+	If it's a synced geofence and the geometry changed in the "location" field, updates in Traccar
+	If it's a synced geofence and the vehicles changed, updates links in Traccar
 	"""
-	if not doc.sync_traccar_geofence:
-		# TODO: handle modifications / delete geofence if uncheck this?
+	if doc.doctype not in ["Address", "Location"]:
 		return
+
 	if doc.doctype == "Address":
-		# TODO: Dynamic Link to Location? Need polygon/polyline coords for geofence
-		return
-	elif doc.doctype == "Location" and not doc.traccar_geofence_id:
-		loc = json.loads(doc.location)
-		if not has_valid_feature_type(loc):
-			frappe.msgprint(
-				_(
-					"No valid geometry features (polyline, polygon, or rectangle) found on map to use as geofence."
+		for link in doc.links:
+			if link.link_doctype == "Location":
+				doc = frappe.get_doc("Location", link.link_name)
+	old_doc = doc.get_doc_before_save()
+	loc = json.loads(doc.location)
+
+	if not doc.sync_traccar_geofence:
+		if old_doc.sync_traccar_geofence and old_doc.traccar_geofence_id:
+			# user un-checked a geofence that was synced with Traccar -> delete from Traccar
+			try:
+				delete_traccar_geofence(old_doc.traccar_geofence_id)
+				doc.traccar_geofence_id = ""
+				doc.geofenced_vehicle = []
+			except ValidationError as e:
+				frappe.log_error(
+					title=_(
+						f"Error deleting geofence from Traccar with ID {old_doc.traccar_geofence_id} for {doc.doctype} {doc.name}."
+					),
+					message=_(f"{e}\n\n{frappe.get_traceback()}"),
+					reference_doctype=doc.doctype,
+					reference_name=doc.name,
 				)
-			)
-			return
+		return
+	elif not doc.traccar_geofence_id:
+		# new geofence, create in Traccar and link vehicles
 		for feature in loc["features"]:
 			feat_type = feature.get("geometry", {}).get("type")
 			if feat_type not in ["LineString", "Polygon"]:
@@ -65,9 +111,32 @@ def sync_traccar_geofence(doc, method=None):
 				]
 			geofence_id = add_traccar_geofence(doc, feat_type, coords, device_ids=device_ids)
 			doc.traccar_geofence_id = geofence_id
-	elif doc.doctype == "Location":
-		# TODO: what to do if has geofence id - check for modifications and push updates?
-		return
+			return
+
+	if doc.traccar_geofence_id and doc.has_value_changed("location"):
+		# geometry in Location changed, update geofence
+		for feature in loc["features"]:
+			feat_type = feature.get("geometry", {}).get("type")
+			if feat_type not in ["LineString", "Polygon"]:
+				continue
+			coords = []
+			flatten_coordinates(coord_list=coords, item=feature["geometry"]["coordinates"])
+			new_area = coords_list_to_wkt_format(feat_type, coords)
+			data = {"area": new_area}
+			update_traccar_geofence(doc.traccar_geofence_id, data)
+
+	if doc.traccar_geofence_id and not doc.is_child_table_same("geofenced_vehicle"):
+		# vehicles to link geofence to changed, update Traccar links
+		old_vehicles = [v.vehicle for v in old_doc.geofenced_vehicle]
+		new_vehicles = [v.vehicle for v in doc.geofenced_vehicle]
+		added = set(new_vehicles) - set(old_vehicles)
+		removed = set(old_vehicles) - set(new_vehicles)
+		for added_v in added:
+			did = frappe.get_value("Vehicle", added_v, "traccar_id")
+			link_traccar_object("deviceId", did, "geofenceId", doc.traccar_geofence_id)
+		for removed_v in removed:
+			did = frappe.get_value("Vehicle", removed_v, "traccar_id")
+			unlink_traccar_object("deviceId", did, "geofenceId", doc.traccar_geofence_id)
 
 
 def has_valid_feature_type(geojson):

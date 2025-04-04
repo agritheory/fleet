@@ -145,14 +145,10 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-	"Vehicle": {
+	"Address": {
 		"validate": [
-			"fleet.fleet.overrides.vehicle.validate_poll_frequency_cron_format",
-		],
-		"before_save": [
-			"fleet.fleet.overrides.vehicle.check_schedule_poll_frequency",
-			"fleet.fleet.traccar.add_traccar_device",
-		],
+			"fleet.fleet.overrides.address.validate_single_location_in_links",
+		]
 	},
 	"Driver": {
 		"before_save": [
@@ -161,9 +157,19 @@ doc_events = {
 	},
 	"Location": {
 		"validate": [
+			"fleet.fleet.overrides.location.validate_geofence_geometry",
 			"fleet.fleet.overrides.location.validate_geofenced_vehicles_have_traccar_id",
 			"fleet.fleet.overrides.location.sync_traccar_geofence",
 		]
+	},
+	"Vehicle": {
+		"validate": [
+			"fleet.fleet.overrides.vehicle.validate_poll_frequency_cron_format",
+		],
+		"before_save": [
+			"fleet.fleet.overrides.vehicle.check_schedule_poll_frequency",
+			"fleet.fleet.traccar.add_traccar_device",
+		],
 	},
 }
 
