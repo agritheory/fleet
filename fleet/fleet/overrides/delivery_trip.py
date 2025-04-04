@@ -6,11 +6,7 @@ import vroom
 def get_geocode_from_address(address: str) -> tuple:
     # Placeholder function, location should be populated on address entry
     url = "https://nominatim.openstreetmap.org/search"
-    params = {
-    "q": address,
-    "format": "json",
-    "limit": 1
-    }
+    params = {"q": address, "format": "json", "limit": 1}
     headers = {"User-Agent": "fleet/1.0 (cole@agritheory.dev)"}
     try:
         response = requests.get(url, params=params, headers=headers)
@@ -38,16 +34,12 @@ class Delivery:
 
 def tsp_vehicle_solver(deliveries: list[Delivery], vehicle_location: tuple):
     problem_instance = vroom.Input(
-        servers={"auto": "valhalla1.openstreetmap.de:443"},
-        router=vroom._vroom.ROUTER.VALHALLA
+        servers={"auto": "valhalla1.openstreetmap.de:443"}, router=vroom._vroom.ROUTER.VALHALLA
     )
     problem_instance.add_vehicle(vroom.Vehicle(1, start=vehicle_location, profile="auto"))
-    problem_instance.add_job([
-        vroom.Job(
-            deliv.id, 
-            location=deliv.location)
-            for deliv in deliveries]
-            )
+    problem_instance.add_job(
+        [vroom.Job(deliv.id, location=deliv.location) for deliv in deliveries]
+    )
     sol = problem_instance.solve(exploration_level=5, nb_threads=4).to_dict()["routes"]
     return sol
 
@@ -60,7 +52,7 @@ def optimize_path(doc: "DeliveryTrip") -> list["DeliveryTripItem"]:
     deliveries = [Delivery(i, stop) for i, stop in enumerate(doc["delivery_stops"])]
 
     # Get vehicle location
-    #veh = doc["vehicle"]
+    # veh = doc["vehicle"]
     # TODO: Placeholder for vehicle location
     veh = deliveries[0].location
 
