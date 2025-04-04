@@ -80,7 +80,7 @@ def sync_traccar_geofence(doc, method=None):
 	loc = json.loads(doc.location)
 
 	if not doc.sync_traccar_geofence:
-		if old_doc.sync_traccar_geofence and old_doc.traccar_geofence_id:
+		if old_doc and old_doc.sync_traccar_geofence and old_doc.traccar_geofence_id:
 			# user un-checked a geofence that was synced with Traccar -> delete from Traccar
 			try:
 				delete_traccar_geofence(old_doc.traccar_geofence_id)
@@ -125,7 +125,7 @@ def sync_traccar_geofence(doc, method=None):
 			data = {"area": new_area}
 			update_traccar_geofence(doc.traccar_geofence_id, data)
 
-	if doc.traccar_geofence_id and not doc.is_child_table_same("geofenced_vehicle"):
+	if doc.traccar_geofence_id and not doc.is_child_table_same("geofenced_vehicle") and old_doc:
 		# vehicles to link geofence to changed, update Traccar links
 		old_vehicles = [v.vehicle for v in old_doc.geofenced_vehicle]
 		new_vehicles = [v.vehicle for v in doc.geofenced_vehicle]
