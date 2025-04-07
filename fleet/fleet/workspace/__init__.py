@@ -80,13 +80,6 @@ def get_coords() -> dict[str, Any]:
 
 		except (json.JSONDecodeError, KeyError, ValueError) as e:
 			continue
-	
-	print("rta")
-	print({
-		"features": {"type": "FeatureCollection", "features": features},
-		"bounds": bounds,
-		"center": center
-	})
 
 	return {
 		"features": {"type": "FeatureCollection", "features": features},
