@@ -65,9 +65,9 @@ def sync_traccar_geofence(doc, method=None):
 
 	If there's an existing synced geofence and "sync_traccar_geofence" is unchecked, deletes
 	geofence from Traccar.
-	If it's a new geofence, creates it in Traccar and links vehicles
 	If it's a synced geofence and the geometry changed in the "location" field, updates in Traccar
 	If it's a synced geofence and the vehicles changed, updates links in Traccar
+	If it's a new geofence, creates it in Traccar and links vehicles
 	"""
 	if doc.doctype not in ["Address", "Location"]:
 		return
@@ -95,7 +95,33 @@ def sync_traccar_geofence(doc, method=None):
 					reference_doctype=doc.doctype,
 					reference_name=doc.name,
 				)
-		return
+
+	elif doc.traccar_geofence_id:
+		if doc.has_value_changed("location"):
+			# geometry in Location changed, update geofence
+			for feature in loc["features"]:
+				feat_type = feature.get("geometry", {}).get("type")
+				if feat_type not in ["LineString", "Polygon"]:
+					continue
+				coords = []
+				flatten_coordinates(coord_list=coords, item=feature["geometry"]["coordinates"])
+				new_area = coords_list_to_wkt_format(feat_type, coords)
+				data = {"area": new_area}
+				update_traccar_geofence(doc.traccar_geofence_id, data)
+
+		if not doc.is_child_table_same("geofenced_vehicle") and old_doc:
+			# vehicles to link geofence to changed, update Traccar links
+			old_vehicles = [v.vehicle for v in old_doc.geofenced_vehicle]
+			new_vehicles = [v.vehicle for v in doc.geofenced_vehicle]
+			added = set(new_vehicles) - set(old_vehicles)
+			removed = set(old_vehicles) - set(new_vehicles)
+			for added_v in added:
+				did = frappe.get_value("Vehicle", added_v, "traccar_id")
+				link_traccar_object("deviceId", did, "geofenceId", doc.traccar_geofence_id)
+			for removed_v in removed:
+				did = frappe.get_value("Vehicle", removed_v, "traccar_id")
+				unlink_traccar_object("deviceId", did, "geofenceId", doc.traccar_geofence_id)
+
 	elif not doc.traccar_geofence_id:
 		# new geofence, create in Traccar and link vehicles
 		for feature in loc["features"]:
@@ -111,32 +137,6 @@ def sync_traccar_geofence(doc, method=None):
 				]
 			geofence_id = add_traccar_geofence(doc, feat_type, coords, device_ids=device_ids)
 			doc.traccar_geofence_id = geofence_id
-			return
-
-	if doc.traccar_geofence_id and doc.has_value_changed("location"):
-		# geometry in Location changed, update geofence
-		for feature in loc["features"]:
-			feat_type = feature.get("geometry", {}).get("type")
-			if feat_type not in ["LineString", "Polygon"]:
-				continue
-			coords = []
-			flatten_coordinates(coord_list=coords, item=feature["geometry"]["coordinates"])
-			new_area = coords_list_to_wkt_format(feat_type, coords)
-			data = {"area": new_area}
-			update_traccar_geofence(doc.traccar_geofence_id, data)
-
-	if doc.traccar_geofence_id and not doc.is_child_table_same("geofenced_vehicle") and old_doc:
-		# vehicles to link geofence to changed, update Traccar links
-		old_vehicles = [v.vehicle for v in old_doc.geofenced_vehicle]
-		new_vehicles = [v.vehicle for v in doc.geofenced_vehicle]
-		added = set(new_vehicles) - set(old_vehicles)
-		removed = set(old_vehicles) - set(new_vehicles)
-		for added_v in added:
-			did = frappe.get_value("Vehicle", added_v, "traccar_id")
-			link_traccar_object("deviceId", did, "geofenceId", doc.traccar_geofence_id)
-		for removed_v in removed:
-			did = frappe.get_value("Vehicle", removed_v, "traccar_id")
-			unlink_traccar_object("deviceId", did, "geofenceId", doc.traccar_geofence_id)
 
 
 def has_valid_feature_type(geojson):
