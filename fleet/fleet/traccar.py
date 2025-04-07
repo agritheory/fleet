@@ -97,6 +97,19 @@ def get_vehicle_position(vehicle_doc):
 
 
 def create_vehicle_log(vehicle_doc, position):
+	prior_vl = frappe.get_all(
+		"Vehicle Log",
+		filters={"license_plate": vehicle_doc.name, "docstatus": 1},
+		fields=["employee", "geofence_ids"],
+		order_by="modified desc",
+		limit=1,
+	)
+	last_emp = prior_vl[0].employee if prior_vl else None
+	prior_gf_id_str = (prior_vl[0].geofence_ids or "") if prior_vl else ""
+	prior_geofence_ids = [int(s.strip()) for s in prior_gf_id_str.split(",") if s]
+	gf_ids = position.get("geofenceIds") or []
+	gf_changes = get_geofence_change(prior_geofence_ids, gf_ids)
+
 	timestamp = get_datetime_from_timestamp_string(
 		position.get("fixTime") or get_now_timestamp_string()
 	)
@@ -105,18 +118,12 @@ def create_vehicle_log(vehicle_doc, position):
 	frappe.set_user("Traccar")
 	if attributes.get("driverUniqueId"):
 		driver_emp = frappe.get_value("Driver", attributes.get("driverUniqueId"), "employee")
+	elif last_emp:
+		driver_emp = last_emp
 	else:
-		last_emp = frappe.get_all(
-			"Vehicle Log",
-			filters={"license_plate": vehicle_doc.name, "docstatus": 1},
-			fields=["employee"],
-			order_by="modified desc",
-			limit=1,
-			pluck="employee",
-		)
-		driver_emp = last_emp[0]
-	vd = vehicle_doc.drivers[-1].driver if vehicle_doc.drivers else ""
-	driver_emp = frappe.get_value("Driver", vd, "employee")
+		vd = vehicle_doc.drivers[-1].driver if vehicle_doc.drivers else ""
+		driver_emp = frappe.get_value("Driver", vd, "employee")
+
 	log = frappe.new_doc("Vehicle Log")
 	log.update(
 		{
@@ -131,10 +138,13 @@ def create_vehicle_log(vehicle_doc, position):
 			"battery_level": position.get("attributes", {}).get("batteryLevel"),
 			"fuel_qty": attributes.get("fuel"),
 			"hours": attributes.get("hours") or attributes.get("engineHours"),
-			"engine_temperature": attributes.get("engineTemp"),
+			"engine_temperature": attributes.get("engineTemp") or attributes.get("temp"),
 			"speed": position.get("speed"),
 			"diagnostic": attributes.get("diagnostic", "")[:140],
 			"rpm": attributes.get("rpm"),
+			"geofence_ids": ",".join([str(id) for id in gf_ids]),
+			"geofences_entered": ",".join([gf for gf in gf_changes.entered]),
+			"geofences_exited": ",".join([gf for gf in gf_changes.exited]),
 		}
 	)
 	log.save(ignore_permissions=True)
@@ -641,3 +651,26 @@ def coords_list_to_wkt_format(shape, coords):
 	else:
 		area = f"{shape.upper()} (({coord_string}))"
 	return area
+
+
+def get_geofence_change(prior_geofence_ids, current_geofence_ids):
+	"""
+	Returns a dict with "entered" and "exited" keys with respective lists of the geofence names.
+
+	:param prior_geofence_ids: list | None; value in prior Vehicle Log's geofence_ids field
+	:param current_geofence_ids: list | None; geofenceIds value in Vehicle's current Traccar
+	position data
+	:return: dict | None; {"entered": [geofence_name, ...], "exited": [geofence_name, ,,,]}
+	"""
+	prior = set(prior_geofence_ids) if prior_geofence_ids else set()
+	current = set(current_geofence_ids) if current_geofence_ids else set()
+	if prior == current:
+		entered, exited = [], []
+	else:
+		entered = [
+			frappe.get_value("Location", {"traccar_geofence_id": gfid}) for gfid in list(current - prior)
+		]
+		exited = [
+			frappe.get_value("Location", {"traccar_geofence_id": gfid}) for gfid in list(prior - current)
+		]
+	return frappe._dict({"entered": entered, "exited": exited})
