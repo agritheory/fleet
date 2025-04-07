@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import json
+import requests
 from typing import Any
 
 import frappe
@@ -11,9 +12,45 @@ from frappe.utils.data import flt
 @frappe.whitelist()
 def get_coords() -> dict[str, Any]:
 	vs = frappe.get_all("Vehicle")
-
-	features = []
+	default_company = frappe.get_value("Global Defaults", None, "default_company")
+	address_doc = None
 	bounds = {"minLat": 90, "maxLat": -90, "minLng": 180, "maxLng": -180}
+	features = []
+
+	address_link = frappe.get_all("Dynamic Link",
+		filters={"link_doctype": "Company", "link_name": default_company},
+		fields=["parent"],
+		order_by="creation desc",
+		limit=1
+	)
+	if address_link:
+		address_doc = frappe.get_doc("Address", address_link[0]["parent"])
+		address_str = ", ".join(filter(None, [
+			address_doc.address_line1,
+			address_doc.city,
+			address_doc.state,
+			address_doc.country,
+			address_doc.pincode
+		]))
+		lat, lng = geocode_address(address_str)
+
+		if lat and lng:
+			bounds = {
+				"minLat": lat,
+				"maxLat": lat,
+				"minLng": lng,
+				"maxLng": lng
+			}
+			features.append({
+				"type": "Feature",
+				"geometry": {
+					"type": "Point",
+					"coordinates": [lng, lat]
+				},
+				"properties": {
+					"name": "Company Headquarters",
+				}
+			})
 
 	for vehicle in vs:
 		gps_location = frappe.get_doc("Vehicle", vehicle).gps_location
@@ -80,3 +117,19 @@ def get_eta():
 		output += '<tr><td colspan=4 align="center">No Delivery Trips Found</td></tr>'
 	output += "</tbody></table>"
 	return output
+
+def geocode_address(address_str):
+	address_str = "3 Canterbury Rd, Concord, Nuevo Hampshire"
+	url = "https://nominatim.openstreetmap.org/search"
+	params = {
+		"q": address_str,
+		"format": "json",
+		"limit": 1
+	}
+	response = requests.get(url, params=params, headers={"User-Agent": "Frappe Fleet App"})
+
+	if response.ok and response.json():
+		lat = float(response.json()[0]["lat"])
+		lon = float(response.json()[0]["lon"])
+		return lat, lon
+	return None, None
