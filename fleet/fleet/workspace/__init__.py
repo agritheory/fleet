@@ -16,6 +16,7 @@ def get_coords() -> dict[str, Any]:
 	address_doc = None
 	bounds = {"minLat": 90, "maxLat": -90, "minLng": 180, "maxLng": -180}
 	features = []
+	center = None
 
 	address_link = frappe.get_all("Dynamic Link",
 		filters={"link_doctype": "Company", "link_name": default_company},
@@ -35,12 +36,14 @@ def get_coords() -> dict[str, Any]:
 		lat, lng = geocode_address(address_str)
 
 		if lat and lng:
-			bounds = {
-				"minLat": lat,
-				"maxLat": lat,
-				"minLng": lng,
-				"maxLng": lng
+			center = {
+				"lng": lng,
+				"lat": lat
 			}
+			bounds["minLat"] = min(bounds["minLat"], lat)
+			bounds["maxLat"] = max(bounds["maxLat"], lat)
+			bounds["minLng"] = min(bounds["minLng"], lng)
+			bounds["maxLng"] = max(bounds["maxLng"], lng)
 			features.append({
 				"type": "Feature",
 				"geometry": {
@@ -77,8 +80,19 @@ def get_coords() -> dict[str, Any]:
 
 		except (json.JSONDecodeError, KeyError, ValueError) as e:
 			continue
+	
+	print("rta")
+	print({
+		"features": {"type": "FeatureCollection", "features": features},
+		"bounds": bounds,
+		"center": center
+	})
 
-	return {"features": {"type": "FeatureCollection", "features": features}, "bounds": bounds}
+	return {
+		"features": {"type": "FeatureCollection", "features": features},
+		"bounds": bounds,
+		"center": center
+	}
 
 
 @frappe.whitelist()
