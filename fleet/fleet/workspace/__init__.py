@@ -44,8 +44,8 @@ def get_coords() -> dict[str, Any]:
 					"type": "Feature",
 					"geometry": {"type": "Point", "coordinates": [lng, lat]},
 					"properties": {
-						"name": "Company Headquarters",
-						"is_headquarters": True,
+						"name": "Company",
+						"is_company_address": True,
 					},
 				}
 			)

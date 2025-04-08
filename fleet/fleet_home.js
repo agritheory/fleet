@@ -17,7 +17,7 @@ frappe
 		}
 
 		const latlngs = []
-		let headquartersCoords = null
+		let companyCoords = null
 
 		response.features.features.forEach(feature => {
 			const [lng, lat] = feature.geometry.coordinates
@@ -27,15 +27,15 @@ frappe
 			const marker = L.marker(coords)
 				.bindPopup(
 					`
-                ${!feature.properties.is_headquarters ? `<b>Vehicle</b> ${feature.properties.name}` : ''}
+                ${!feature.properties.is_company_address ? `<b>Vehicle</b> ${feature.properties.name}` : ''}
                 ${feature.properties.driver ? `<b>Driver:</b> ${feature.properties.driver}<br>` : ''}
             `
 				)
 				.addTo(map)
 
-			if (feature.properties.is_headquarters) {
-				headquartersCoords = coords
-				marker.bindTooltip('Headquarters', {
+			if (feature.properties.is_company_address) {
+				companyCoords = coords
+				marker.bindTooltip(feature.properties.name, {
 					permanent: true,
 					direction: 'top',
 				})
@@ -48,16 +48,16 @@ frappe
 			// Fit the map to show all markers with some padding
 			map.fitBounds(bounds, { padding: [50, 50] })
 
-			// Optionally shift the map view slightly towards the headquarters
-			if (headquartersCoords) {
+			// Optionally shift the map view slightly towards the company
+			if (companyCoords) {
 				setTimeout(() => {
 					// Get current center after fitBounds is applied
 					const currentCenter = map.getCenter()
 
-					const hqLat = headquartersCoords[0]
-					const hqLng = headquartersCoords[1]
+					const hqLat = companyCoords[0]
+					const hqLng = companyCoords[1]
 
-					// Calculate new center between the map's current center and the headquarters location.
+					// Calculate new center between the map's current center and the company location.
 					// This softens the re-centering effect while still giving prominence to HQ.
 					const adjustedLat = (currentCenter.lat + hqLat) / 2
 					const adjustedLng = (currentCenter.lng + hqLng) / 2
