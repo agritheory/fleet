@@ -2,10 +2,10 @@
 # For license information, please see license.txt
 
 import json
-import requests
 from typing import Any
 
 import frappe
+import requests
 from frappe.utils.data import flt
 
 
@@ -13,43 +13,42 @@ from frappe.utils.data import flt
 def get_coords() -> dict[str, Any]:
 	vs = frappe.get_all("Vehicle")
 	default_company = frappe.get_value("Global Defaults", None, "default_company")
-	address_doc = None
-	bounds = {"minLat": 90, "maxLat": -90, "minLng": 180, "maxLng": -180}
 	features = []
 
-	address_link = frappe.get_all("Dynamic Link",
+	address_link = frappe.get_all(
+		"Dynamic Link",
 		filters={"link_doctype": "Company", "link_name": default_company},
 		fields=["parent"],
 		order_by="creation desc",
-		limit=1
+		limit=1,
 	)
 	if address_link:
 		address_doc = frappe.get_doc("Address", address_link[0]["parent"])
-		address_str = ", ".join(filter(None, [
-			address_doc.address_line1,
-			address_doc.city,
-			address_doc.state,
-			address_doc.country,
-			address_doc.pincode
-		]))
+		address_str = ", ".join(
+			filter(
+				None,
+				[
+					address_doc.address_line1,
+					address_doc.city,
+					address_doc.state,
+					address_doc.country,
+					address_doc.pincode,
+				],
+			)
+		)
 		lat, lng = geocode_address(address_str)
 
 		if lat and lng:
-			bounds["minLat"] = min(bounds["minLat"], lat)
-			bounds["maxLat"] = max(bounds["maxLat"], lat)
-			bounds["minLng"] = min(bounds["minLng"], lng)
-			bounds["maxLng"] = max(bounds["maxLng"], lng)
-			features.append({
-				"type": "Feature",
-				"geometry": {
-					"type": "Point",
-					"coordinates": [lng, lat]
-				},
-				"properties": {
-					"name": "Company Headquarters",
-					"is_headquarters": True,
+			features.append(
+				{
+					"type": "Feature",
+					"geometry": {"type": "Point", "coordinates": [lng, lat]},
+					"properties": {
+						"name": "Company Headquarters",
+						"is_headquarters": True,
+					},
 				}
-			})
+			)
 
 	for vehicle in vs:
 		gps_location = frappe.get_doc("Vehicle", vehicle).gps_location
@@ -58,29 +57,22 @@ def get_coords() -> dict[str, Any]:
 
 		try:
 			location = json.loads(gps_location)
-			lng, lat = location["features"][0]["geometry"]["coordinates"]
-			bounds["minLat"] = min(bounds["minLat"], lat)
-			bounds["maxLat"] = max(bounds["maxLat"], lat)
-			bounds["minLng"] = min(bounds["minLng"], lng)
-			bounds["maxLng"] = max(bounds["maxLng"], lng)
 
-			feature = {
-				"type": "Feature",
-				"geometry": location["features"][0]["geometry"],
-				"properties": {
-					"name": f'<a href="/app/vehicle/{vehicle.name}">{vehicle.name}</a>',
-					# "driver": f'<a href="/app/vehicle/{vehicle.driver}">{vehicle.driver}</a>',
-				},
-			}
-			features.append(feature)
+			features.append(
+				{
+					"type": "Feature",
+					"geometry": location["features"][0]["geometry"],
+					"properties": {
+						"name": f'<a href="/app/vehicle/{vehicle.name}">{vehicle.name}</a>',
+						# "driver": f'<a href="/app/vehicle/{vehicle.driver}">{vehicle.driver}</a>',
+					},
+				}
+			)
 
-		except (json.JSONDecodeError, KeyError, ValueError) as e:
+		except (json.JSONDecodeError, KeyError, ValueError):
 			continue
 
-	return {
-		"features": {"type": "FeatureCollection", "features": features},
-		"bounds": bounds,
-	}
+	return {"features": {"type": "FeatureCollection", "features": features}}
 
 
 @frappe.whitelist()
@@ -120,15 +112,12 @@ def get_eta():
 	output += "</tbody></table>"
 	return output
 
+
 def geocode_address(address_str):
-	#address_str = "3 Canterbury Rd, Concord, Nuevo Hampshire"
-	address_str = "45 Hancock St, Rochester, NH 03867, Estados Unidos"
+	address_str = "3 Canterbury Rd, Concord, Nuevo Hampshire"
+	# address_str = "45 Hancock St, Rochester, NH 03867, Estados Unidos"
 	url = "https://nominatim.openstreetmap.org/search"
-	params = {
-		"q": address_str,
-		"format": "json",
-		"limit": 1
-	}
+	params = {"q": address_str, "format": "json", "limit": 1}
 	response = requests.get(url, params=params, headers={"User-Agent": "Frappe Fleet App"})
 
 	if response.ok and response.json():
