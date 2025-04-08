@@ -16,7 +16,6 @@ def get_coords() -> dict[str, Any]:
 	address_doc = None
 	bounds = {"minLat": 90, "maxLat": -90, "minLng": 180, "maxLng": -180}
 	features = []
-	center = None
 
 	address_link = frappe.get_all("Dynamic Link",
 		filters={"link_doctype": "Company", "link_name": default_company},
@@ -36,10 +35,6 @@ def get_coords() -> dict[str, Any]:
 		lat, lng = geocode_address(address_str)
 
 		if lat and lng:
-			center = {
-				"lng": lng,
-				"lat": lat
-			}
 			bounds["minLat"] = min(bounds["minLat"], lat)
 			bounds["maxLat"] = max(bounds["maxLat"], lat)
 			bounds["minLng"] = min(bounds["minLng"], lng)
@@ -52,6 +47,7 @@ def get_coords() -> dict[str, Any]:
 				},
 				"properties": {
 					"name": "Company Headquarters",
+					"is_headquarters": True,
 				}
 			})
 
@@ -84,7 +80,6 @@ def get_coords() -> dict[str, Any]:
 	return {
 		"features": {"type": "FeatureCollection", "features": features},
 		"bounds": bounds,
-		"center": center
 	}
 
 
@@ -126,7 +121,8 @@ def get_eta():
 	return output
 
 def geocode_address(address_str):
-	address_str = "3 Canterbury Rd, Concord, Nuevo Hampshire"
+	#address_str = "3 Canterbury Rd, Concord, Nuevo Hampshire"
+	address_str = "45 Hancock St, Rochester, NH 03867, Estados Unidos"
 	url = "https://nominatim.openstreetmap.org/search"
 	params = {
 		"q": address_str,
