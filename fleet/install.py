@@ -33,7 +33,7 @@ def install_states_and_provinces():
 def install_custom_html_blocks():
 	fleet_home_path = os.path.join(frappe.get_app_path("fleet"), "fleet_home.js")
 
-	with open(fleet_home_path, "r") as fleet_home_file:
+	with open(fleet_home_path) as fleet_home_file:
 		script = fleet_home_file.read()
 	vehicle_map = {
 		"html": '<div class="tabbed">\n\t<input type="radio" id="tab1" name="css-tabs" checked>\n\t<input type="radio" id="tab2" name="css-tabs">\n\t<input type="radio" id="tab3" name="css-tabs">\n\t\n\t<ul class="tabs">\n\t\t<li class="tab"><label for="tab1">Vehicle Map</label></li>\n\t\t<li class="tab"><label for="tab2">Fleet Calendar</label></li>\n\t\t<li class="tab"><label for="tab3">ETA Tracker</label></li>\n\t</ul>\n\t\n\t<div class="tab-content">\n\t\t<div id="vehicles" style="height: 475px; width: 100%;"></div>\n\t</div>\n\t\n\t<div class="tab-content">\n\t\t<div id="fleet-calendar" style="height: 475x; width: 100%;"></div>\n\t</div>\n\t\n\t<div class="tab-content">\n\t\t<div id="eta-report" style="height: 475px; width: 100%;"></div>\n\t</div>\n</div>',
