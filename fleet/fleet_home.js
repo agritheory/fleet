@@ -27,7 +27,7 @@ frappe
 			const marker = L.marker(coords)
 				.bindPopup(
 					`
-                ${!feature.properties.is_company_address ? `<b>Vehicle</b> ${feature.properties.name}` : ''}
+                ${!feature.properties.is_company_address ? `<b>Vehicle</b>` : '<b>Address</b>'} ${feature.properties.name}
                 ${feature.properties.driver ? `<b>Driver:</b> ${feature.properties.driver}<br>` : ''}
             `
 				)
@@ -35,7 +35,7 @@ frappe
 
 			if (feature.properties.is_company_address) {
 				companyCoords = coords
-				marker.bindTooltip(feature.properties.name, {
+				marker.bindTooltip('Company', {
 					permanent: true,
 					direction: 'top',
 				})

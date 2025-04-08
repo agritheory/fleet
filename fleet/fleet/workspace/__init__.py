@@ -32,7 +32,6 @@ def get_coords() -> dict[str, Any]:
 					address_doc.city,
 					address_doc.state,
 					address_doc.country,
-					address_doc.pincode,
 				],
 			)
 		)
@@ -44,7 +43,7 @@ def get_coords() -> dict[str, Any]:
 					"type": "Feature",
 					"geometry": {"type": "Point", "coordinates": [lng, lat]},
 					"properties": {
-						"name": "Company",
+						"name": address_str,
 						"is_company_address": True,
 					},
 				}
@@ -114,7 +113,6 @@ def get_eta():
 
 
 def geocode_address(address_str):
-	address_str = "3 Canterbury Rd, Concord, Nuevo Hampshire"
 	# address_str = "45 Hancock St, Rochester, NH 03867, Estados Unidos"
 	url = "https://nominatim.openstreetmap.org/search"
 	params = {"q": address_str, "format": "json", "limit": 1}
