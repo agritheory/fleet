@@ -79,10 +79,10 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	company_address = frappe.new_doc("Address")
 	company_address.title = settings.company
 	company_address.address_type = "Office"
-	company_address.address_line1 = "67C Sweeny Street"
-	company_address.city = "Chelsea"
-	company_address.state = "MA"
-	company_address.pincode = "89077"
+	company_address.address_line1 = "3 Canterbury Rd"
+	company_address.city = "Concord"
+	company_address.state = "New Hampshire"
+	company_address.pincode = "03301"
 	company_address.is_your_company_address = 1
 	company_address.append("links", {"link_doctype": "Company", "link_name": settings.company})
 	company_address.save()
