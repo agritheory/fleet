@@ -80,47 +80,261 @@ point_template_geojson = {
 	],
 }
 
-locations = {
+locations_and_addresses = {
 	# Farm Locations
-	"Farm Office": [43.16081, -71.38377],  # Bear Brook State Park (61 Deerfield Rd, Allenstown, NH)
-	"Farm Garage": [43.16257, -71.38921],  # Bear Brook State Park Office / Toll Booth
-	"Farm Greenhouse": [43.14434, -71.35657],  # Podunk Rd Parking Lot in Bear Brook
-	"Farm Warehouse": [43.13871, -71.34741],  # Archery Course at Bear Brook
-	"Farm North Field": [43.13479, -71.36561],  # Hayes Field in Bear Brook
-	"Farm South Field": [43.11243, -71.36361],  # Bear Hill Pond Beach at Bear Brook
-	# Customer Locations
-	"Customer 1": [43.21016, -71.53859],  # Court House (5 Court St, Concord, NH)
-	"Customer 2": [43.20719, -71.53818],  # NH State House (107 N Main St, Concord, NH)
-	"Customer 3": [43.21818, -71.51654],  # Concord DMV (23 Hazen Drive, Concord, NH)
-	"Customer 4": [42.96644, -71.45256],  # Manchester DMV (377 S Willow St, Manchester, NH)
-	"Customer 5": [43.2205, -71.55583],  # Blossom Hill Cemetery (207 N State St, Concord, NH)
-	"Customer 6": [
-		43.21365,
-		-71.19854,
-	],  # Northwood Meadows State Park (755 First NH Turnpike, Northwood, NH)
-	"Customer 7": [43.09841, -71.65377],  # Clough State Park (455 Clough Park Rd, Weare, NH)
-	"Customer 8": [43.08289, -71.17066],  # Pawtuckaway State Park (128 Mountain Rd, Nottingham, NH)
-	"Customer 9": [
-		43.46922,
-		-71.88488,
-	],  # Hannah Duston Memorial Historic Site (298 US Route 4, Boscawen, NH)
-	"Customer 10": [
-		42.95429,
-		-71.88572,
-	],  # Greenfield State Park (52 Campground Road, Greenfield, NH)
-	"Customer 11": [
-		42.87173,
-		-71.29494,
-	],  # Robert Frost Farm Historic Site (122 Rockingham Rd, Derry, NH)
-	"Customer 12": [42.87584, -71.23921],  # Taylor Mill Historic Site (242 Island Pond Rd, Derry, NH)
-	"Customer 13": [
-		43.34743,
-		-71.84846,
-	],  # Rollins State Park (1066 Kearsage Mountain Road, Warner, NH)
-	"Customer 14": [43.14244, -71.50262],  # Bow Town Forest (17-23 Robinson Rd, Bow, NH)
-	"Customer 15": [43.10030, -71.52940],  # Nottingcook Forest (~56 South Bow Rd, Bow, NH)
-	# Other Locations - uncomment and rename as-needed. Key becomes location name in ERPNext
-	# "Other 1": [43.15400, -71.53043],  # Knox Forest (Heidi Ln, Bow, NH)
+	"Farm Office": {
+		# Bear Brook State Park (61 Deerfield Rd, Allenstown, NH)
+		"location": [43.16081, -71.38377],
+	},
+	"Farm Garage": {
+		# Bear Brook State Park Office / Toll Booth
+		"location": [43.16257, -71.38921],
+	},
+	"Farm Greenhouse": {
+		# Podunk Rd Parking Lot in Bear Brook
+		"location": [43.14434, -71.35657],
+	},
+	"Farm Warehouse": {
+		# Archery Course at Bear Brook
+		"location": [43.13871, -71.34741],
+	},
+	"Farm North Field": {
+		# Hayes Field in Bear Brook
+		"location": [43.13479, -71.36561],
+	},
+	"Farm South Field": {
+		# Bear Hill Pond Beach at Bear Brook
+		"location": [43.11243, -71.36361],
+	},
+	# Customers
+	"Andromeda Fruit Market": {
+		# Court House
+		"address": {
+			"address_line1": "5 Court St",
+			"address_title": "Andromeda Fruit Market",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Andromeda Fruit Market"}],
+			"name": "Andromeda Fruit Market-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.21016, -71.53859],
+	},
+	"Betelgeuse Bakery Suppliers": {
+		# NH State House
+		"address": {
+			"address_line1": "107 N Main St",
+			"address_title": "Betelgeuse Bakery Suppliers",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Betelgeuse Bakery Suppliers"}],
+			"name": "Betelgeuse Bakery Suppliers-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.20719, -71.53818],
+	},
+	"Cassiopeia Restaurant Group": {
+		# Concord DMV
+		"address": {
+			"address_line1": "23 Hazen Dr",
+			"address_title": "Cassiopeia Restaurant Group",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Cassiopeia Restaurant Group"}],
+			"name": "Cassiopeia Restaurant Group-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.21818, -71.51654],
+	},
+	"Delphinus Food Distributors": {
+		# Manchester DMV
+		"address": {
+			"address_line1": "377 S Willow St",
+			"address_title": "Delphinus Food Distributors",
+			"address_type": "Shipping",
+			"city": "Manchester",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Delphinus Food Distributors"}],
+			"name": "Delphinus Food Distributors-Shipping",
+			"pincode": "03103",
+			"state": "NH",
+		},
+		"location": [42.96644, -71.45256],
+	},
+	"Grus Goodies": {
+		# Blossom Hill Cemetery
+		"address": {
+			"address_line1": "207 N State St",
+			"address_title": "Grus Goodies",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Grus Goodies"}],
+			"name": "Grus Goodies-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.22050, -71.55583],
+	},
+	"Hydra Produce Co": {
+		# Northwood Meadows State Park
+		"address": {
+			"address_line1": "755 First NH Turnpike",
+			"address_title": "Hydra Produce Co",
+			"address_type": "Shipping",
+			"city": "Northwood",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Hydra Produce Co"}],
+			"name": "Hydra Produce Co-Shipping",
+			"pincode": "03261",
+			"state": "NH",
+		},
+		"location": [43.21365, -71.19854],
+	},
+	"Phoenix Fruit, Ltd": {
+		# Clough State Park
+		"address": {
+			"address_line1": "455 Clough Park Rd",
+			"address_title": "Phoenix Fruit, Ltd",
+			"address_type": "Shipping",
+			"city": "Weare",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Phoenix Fruit, Ltd"}],
+			"name": "Phoenix Fruit, Ltd-Shipping",
+			"pincode": "03281",
+			"state": "NH",
+		},
+		# "location": [43.09841, -71.65377],  # commented to test geocoding
+	},
+	"Almacs Food Group": {
+		# Pawtuckaway State Park
+		"address": {
+			"address_line1": "128 Mountain Rd",
+			"address_title": "Almacs Food Group",
+			"address_type": "Shipping",
+			"city": "Nottingham",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Almacs Food Group"}],
+			"name": "Almacs Food Group-Shipping",
+			"pincode": "03290",
+			"state": "NH",
+		},
+		# "location": [43.08289, -71.17066],  # commented to test geocoding
+	},
+	"Beans and Dreams Roasters": {
+		# Hannah Dustin Memorial Historic Site
+		"address": {
+			"address_line1": "60 Commercial St",
+			"address_title": "Beans and Dreams Roasters",
+			"address_type": "Shipping",
+			"city": "Boscawen",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Beans and Dreams Roasters"}],
+			"name": "Beans and Dreams Roasters-Shipping",
+			"pincode": "03303",
+			"state": "NH",
+		},
+		"location": [43.28987, -71.59075],
+	},
+	"Happy Basket Food Distribution Group": {
+		# Greenfield State Park
+		"address": {
+			"address_line1": "52 Campground Road",
+			"address_title": "Happy Basket Food Distribution Group",
+			"address_type": "Shipping",
+			"city": "Greenfield",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Happy Basket Food Distribution Group"}],
+			"name": "Happy Basket Food Distribution Group-Shipping",
+			"pincode": "03047",
+			"state": "NH",
+		},
+		"location": [42.95429, -71.88572],
+	},
+	"Midtown Munchies Inc": {
+		# Robert Frost Farm Historic Site
+		"address": {
+			"address_line1": "122 Rockingham Rd",
+			"address_title": "Midtown Munchies Inc",
+			"address_type": "Shipping",
+			"city": "Derry",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Midtown Munchies Inc"}],
+			"name": "Midtown Munchies Inc-Shipping",
+			"pincode": "03038",
+			"state": "NH",
+		},
+		"location": [42.87173, -71.29494],
+	},
+	"My Way Cup Coffee": {
+		# Taylor Mill Historic Site
+		"address": {
+			"address_line1": "242 Island Pond Rd",
+			"address_title": "My Way Cup Coffee",
+			"address_type": "Shipping",
+			"city": "Derry",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "My Way Cup Coffee"}],
+			"name": "My Way Cup Coffee-Shipping",
+			"pincode": "03038",
+			"state": "NH",
+		},
+		# "location": [42.87584, -71.23921],  # commented to test geocoding
+	},
+	"Nom Nom Cafe": {
+		# Rollins State Park
+		"address": {
+			"address_line1": "1066 Kearsage Mountain Road",
+			"address_title": "Nom Nom Cafe",
+			"address_type": "Shipping",
+			"city": "Warner",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Nom Nom Cafe"}],
+			"name": "Nom Nom Cafe-Shipping",
+			"pincode": "03278",
+			"state": "NH",
+		},
+		"location": [
+			43.34743,
+			-71.84846,
+		],
+	},
+	"Sand Street Deli": {
+		# Bow Town Forest
+		"address": {
+			"address_line1": "17-23 Robinson Rd",
+			"address_title": "Sand Street Deli",
+			"address_type": "Shipping",
+			"city": "Bow",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Sand Street Deli"}],
+			"name": "Sand Street Deli-Shipping",
+			"pincode": "03304",
+			"state": "NH",
+		},
+		"location": [43.14244, -71.50262],
+	},
+	"Whole Harvest Grocery Group": {
+		# Nottingcook Forest
+		"address": {
+			"address_line1": "136-172 Woodhill Hooksett Rd",
+			"address_title": "Whole Harvest Grocery Group",
+			"address_type": "Shipping",
+			"city": "Bow",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Whole Harvest Grocery Group"}],
+			"name": "Whole Harvest Grocery Group-Shipping",
+			"pincode": "03304",
+			"state": "NH",
+		},
+		"location": [43.10196, -71.50137],
+	},
 }
 
 # For all routes: distance in km, coords are (lat, lon)
@@ -277,7 +491,7 @@ routes = [
 			(43.162320000, -71.388560000),
 		],
 	},
-	{  # Farm truck (Ford): Farm Garage-Customer 4-Customer 5-Farm Garage
+	{  # Farm truck (Ford): Farm Garage-Delphinus Food Distributors-Grus Goodies-Farm Garage
 		"vehicle": "3812947",
 		"distance": 28.3 + 34.8 + 18.6,
 		"route": [
@@ -633,7 +847,7 @@ routes = [
 			(43.160480000, -71.402160000),
 		],
 	},
-	{  # Box truck (Chevrolet): Farm Office-Customer 1-Customer 2-Customer 3-Farm Office
+	{  # Box truck (Chevrolet): Farm Office-Andromeda Fruit Market-Betelgeuse Bakery Suppliers-Cassiopeia Restaurant Group-Farm Office
 		"vehicle": "2749813",
 		"distance": 19.7 + 0.5 + 2.8 + 18.7,
 		"route": [
@@ -912,7 +1126,7 @@ geofences = {
 		},
 		"vehicle": ["AG-NH-7623", "NH-OHV-4521"],
 	},
-	"Customer 1": {
+	"Andromeda Fruit Market": {
 		"feature": {
 			"type": "Feature",
 			"properties": {},
@@ -931,7 +1145,7 @@ geofences = {
 		},
 		"vehicle": ["2749813"],
 	},
-	"Customer 4": {
+	"Delphinus Food Distributors": {
 		"feature": {
 			"type": "Feature",
 			"properties": {},
@@ -950,7 +1164,7 @@ geofences = {
 		},
 		"vehicle": ["2749813", "3812947"],
 	},
-	"Customer 6": {
+	"Hydra Produce Co": {
 		"feature": {
 			"type": "Feature",
 			"properties": {},

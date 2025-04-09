@@ -20,7 +20,7 @@ from fleet.fleet.traccar import get_traccar_driver, link_traccar_object
 from fleet.tests.fixtures.locations_and_routes import (
 	farm_geojson,
 	geofences,
-	locations,
+	locations_and_addresses,
 	point_template_geojson,
 	routes,
 )
@@ -83,10 +83,10 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	company_address = frappe.new_doc("Address")
 	company_address.title = settings.company
 	company_address.address_type = "Office"
-	company_address.address_line1 = "67C Sweeny Street"
-	company_address.city = "Chelsea"
-	company_address.state = "MA"
-	company_address.pincode = "89077"
+	company_address.address_line1 = "61 Deerfield Rd"
+	company_address.city = "Allenstown"
+	company_address.state = "NH"
+	company_address.pincode = "03275"
 	company_address.is_your_company_address = 1
 	company_address.append("links", {"link_doctype": "Company", "link_name": settings.company})
 	company_address.save()
@@ -104,7 +104,7 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	create_asset_categories_and_item_groups(settings)
 	create_vehicles()
 	create_vehicle_logs()
-	create_locations()
+	create_addresses_and_locations()
 	create_items_and_assets(settings)
 
 
@@ -616,13 +616,13 @@ def create_suppliers(settings=None):
 		doc.save()
 
 
-def create_locations(settings=None):
+def create_addresses_and_locations(settings=None):
 	# Dependent on Vehicle
 	# Create the Farm parent location (GeoJSON with polygon and points)
-	f_lat, f_lon = locations.get("Farm Office")
-	farm_loc_keys = [k for k in locations.keys() if k.startswith("Farm")]
+	f_lat, f_lon = locations_and_addresses["Farm Office"]["location"]
+	farm_loc_keys = [k for k in locations_and_addresses.keys() if k.startswith("Farm")]
 	for key in farm_loc_keys:
-		lat, lon = locations.get(key)
+		lat, lon = locations_and_addresses[key]["location"]
 		feat = copy.deepcopy(point_template_geojson["features"][0])
 		feat["properties"]["name"] = key
 		feat["properties"]["description"] = key
@@ -637,37 +637,53 @@ def create_locations(settings=None):
 	farm_l.location = json.dumps(farm_geojson)
 	farm_l.save()
 
-	# Create Farm and Customer locations (GeoJSON with point only)
-	customers = frappe.get_all(
-		"Customer", ["customer_name"], order_by="creation", pluck="customer_name"
+	# Create addresses and locations (GeoJSON with point and geofence as-needed)
+	for key in locations_and_addresses.keys():
+		location = locations_and_addresses[key].get("location")
+		address = locations_and_addresses[key].get("address", {})
+		name = address.get("name", key)
+
+		if location:
+			lat, lon = location
+			geojson = copy.deepcopy(point_template_geojson)
+			geojson["features"][0]["properties"]["name"] = name
+			geojson["features"][0]["properties"]["description"] = name
+			geojson["features"][0]["geometry"]["coordinates"] = [lon, lat]
+			geofence_feat = geofences.get(key)
+			if geofence_feat:
+				geojson["features"].append(geofence_feat["feature"])
+
+			l = frappe.new_doc("Location")
+			l.location_name = name
+			if key.startswith("Farm"):
+				l.parent_location = farm_l.name
+			l.latitude = lat
+			l.longitude = lon
+			l.sync_traccar_geofence = 1 if geofence_feat else 0
+			if geofence_feat and not os.environ.get("CI"):
+				for v in geofence_feat["vehicle"]:
+					l.append("geofenced_vehicle", {"vehicle": v})
+			l.location = json.dumps(geojson)
+			l.save()
+
+		if address:
+			addr = frappe.new_doc("Address")
+			addr.update(address)
+			if location:
+				addr.append("links", {"link_doctype": l.doctype, "link_name": l.name})
+			addr.save()
+
+	# Link Farm Office location to Company Address
+	co_addr = frappe.get_doc("Address", {"is_your_company_address": 1})
+	l_name = frappe.get_value("Location", {"location_name": "Farm Office"})
+	co_addr.append(
+		"links",
+		{
+			"link_doctype": "Location",
+			"link_name": l_name,
+		},
 	)
-	for key, coords in locations.items():
-		lat, lon = coords
-		name = key
-		if key.startswith("Customer"):
-			idx = int(key.split()[-1]) - 1
-			name = customers[idx]
-
-		geojson = copy.deepcopy(point_template_geojson)
-		geojson["features"][0]["properties"]["name"] = name
-		geojson["features"][0]["properties"]["description"] = name
-		geojson["features"][0]["geometry"]["coordinates"] = [lon, lat]
-		geofence_feat = geofences.get(key)
-		if geofence_feat:
-			geojson["features"].append(geofence_feat["feature"])
-
-		l = frappe.new_doc("Location")
-		l.location_name = name
-		if key.startswith("Farm"):
-			l.parent_location = farm_l.name
-		l.latitude = lat
-		l.longitude = lon
-		l.sync_traccar_geofence = 1 if geofence_feat else 0
-		if geofence_feat and not os.environ.get("CI"):
-			for v in geofence_feat["vehicle"]:
-				l.append("geofenced_vehicle", {"vehicle": v})
-		l.location = json.dumps(geojson)
-		l.save()
+	co_addr.save()
 
 
 def create_items_and_assets(settings=None):
