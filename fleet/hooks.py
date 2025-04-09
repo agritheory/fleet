@@ -58,7 +58,7 @@ doctype_calendar_js = {
 # Svg Icons
 # ------------------
 # include app icons in desk
-# app_include_icons = "fleet/public/icons.svg"
+app_include_icons = ["fleet/icons/at-icons_fleet-icon.svg"]
 
 # Home Pages
 # ----------
