@@ -97,6 +97,19 @@ def get_vehicle_position(vehicle_doc):
 
 
 def create_vehicle_log(vehicle_doc, position):
+	prior_vl = frappe.get_all(
+		"Vehicle Log",
+		filters={"license_plate": vehicle_doc.name, "docstatus": 1},
+		fields=["employee", "geofence_ids"],
+		order_by="modified desc",
+		limit=1,
+	)
+	last_emp = prior_vl[0].employee if prior_vl else None
+	prior_gf_id_str = (prior_vl[0].geofence_ids or "") if prior_vl else ""
+	prior_geofence_ids = [int(s.strip()) for s in prior_gf_id_str.split(",") if s]
+	gf_ids = position.get("geofenceIds") or []
+	gf_changes = get_geofence_change(prior_geofence_ids, gf_ids)
+
 	timestamp = get_datetime_from_timestamp_string(
 		position.get("fixTime") or get_now_timestamp_string()
 	)
@@ -105,18 +118,12 @@ def create_vehicle_log(vehicle_doc, position):
 	frappe.set_user("Traccar")
 	if attributes.get("driverUniqueId"):
 		driver_emp = frappe.get_value("Driver", attributes.get("driverUniqueId"), "employee")
+	elif last_emp:
+		driver_emp = last_emp
 	else:
-		last_emp = frappe.get_all(
-			"Vehicle Log",
-			filters={"license_plate": vehicle_doc.name, "docstatus": 1},
-			fields=["employee"],
-			order_by="modified desc",
-			limit=1,
-			pluck="employee",
-		)
-		driver_emp = last_emp[0]
-	vd = vehicle_doc.drivers[-1].driver if vehicle_doc.drivers else ""
-	driver_emp = frappe.get_value("Driver", vd, "employee")
+		vd = vehicle_doc.drivers[-1].driver if vehicle_doc.drivers else ""
+		driver_emp = frappe.get_value("Driver", vd, "employee")
+
 	log = frappe.new_doc("Vehicle Log")
 	log.update(
 		{
@@ -131,10 +138,13 @@ def create_vehicle_log(vehicle_doc, position):
 			"battery_level": position.get("attributes", {}).get("batteryLevel"),
 			"fuel_qty": attributes.get("fuel"),
 			"hours": attributes.get("hours") or attributes.get("engineHours"),
-			"engine_temperature": attributes.get("engineTemp"),
+			"engine_temperature": attributes.get("engineTemp") or attributes.get("temp"),
 			"speed": position.get("speed"),
 			"diagnostic": attributes.get("diagnostic", "")[:140],
 			"rpm": attributes.get("rpm"),
+			"geofence_ids": ",".join([str(id) for id in gf_ids]),
+			"geofences_entered": ",".join([gf for gf in gf_changes.entered]),
+			"geofences_exited": ",".join([gf for gf in gf_changes.exited]),
 		}
 	)
 	log.save(ignore_permissions=True)
@@ -362,6 +372,217 @@ def add_traccar_driver(driver_doc, method=None):
 		frappe.throw(_("Traccar server error: {0}").format(str(e)))
 
 
+def get_traccar_geofences(device_uniqid=None, geofence_id=None):
+	"""
+	Collects all geofences in Traccar. If given, collects geofences associated with either the
+	`device_uniqid` (Vehicle's Traccar IMEI) or match the `geofence_id` from Traccar.
+
+	:param device_uniqid: str | None; Traccar uniqueID for a device (Traccar IMEI on Vehicle)
+	:param geofence_id: int | None; the Traccar ID field on the geofence
+	:return: list; geofence data JSON objects if successful, None with raised error if not
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	api_url = f"?deviceId={device_uniqid}" if device_uniqid else ""
+	try:
+		response = requests.get(
+			urljoin(traccar_server_url, "/api/geofences" + api_url),
+			headers=headers,
+			timeout=10,
+		)
+		response.raise_for_status()
+		geofences = response.json()
+		if geofence_id:
+			geofences = [g for g in geofences if g["id"] == geofence_id]
+		return geofences
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Failed to connect to Traccar server: {0}").format(str(e)))
+
+
+def add_traccar_geofence(doc, shape, coords, device_ids=None, group_ids=None):
+	"""
+	Adds a geofence to Traccar. If `device_ids` or `group_ids` are provided, will link all devices
+	and groups to the geofence.
+
+	:param doc: doc creating geofence from (either Location or Address)
+	:param shape: str; Traccar only supports polygon and polyline shapes
+	:param coords: non-nested sequence of coordinates that defines the shape
+	:param device_ids: str | sequence | None; Traccar deviceId for devices to link to the geofence
+	:param group_ids: str | sequence | None; Traccar groupId for groups to link to the geofence
+	:return: None (error raised if unsuccessful)
+
+	Traccar only requires the name and area keys to create a new geofence. Area is a string in
+	Well-Known Text (WKT) format to represent the geometry. Examples:
+	"POLYGON ((lat1 lon1, lat2 lon2, lat3 lon3, lat1 lon1))"
+	"LINESTRING (lat1 lon1, lat2 lon2, lat3 lon3)"
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	if shape.lower() not in ["polygon", "linestring"]:
+		frappe.throw(
+			_(
+				f"Invalid shape of {shape}. Traccar only supports Polygon or Polyline (LineString) shapes for new geofences."
+			)
+		)
+	if device_ids and isinstance(device_ids, str):
+		device_ids = [device_ids]
+	if group_ids and isinstance(group_ids, str):
+		group_ids = [group_ids]
+
+	try:
+		area = coords_list_to_wkt_format(shape, coords)
+		data = {
+			"name": doc.name,
+			"description": doc.name,
+			"area": area,
+			"attributes": {},
+		}
+		response = requests.post(
+			urljoin(traccar_server_url, "/api/geofences"),
+			headers=headers,
+			timeout=10,
+			data=json.dumps(data),
+		)
+		response.raise_for_status()
+		r = response.json()
+		if r and r["id"]:
+			if device_ids:
+				for did in device_ids:
+					link_traccar_object("deviceId", did, "geofenceId", r["id"])
+			if group_ids:
+				for gid in group_ids:
+					link_traccar_object("groupId", gid, "geofenceId", r["id"])
+			return r["id"]
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def update_traccar_geofence(geofence_id, to_update):
+	"""
+	Updates given keys in `to_update` if geofence exists in Traccar.
+
+	:param geofence_id: str; Traccar geofence ID
+	:param to_update: dict; the key-value pairs of data to update in Traccar
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+
+	try:
+		response = requests.put(
+			urljoin(traccar_server_url, f"/api/geofences?id={geofence_id}"),
+			headers=headers,
+			timeout=10,
+			json=json.dumps(to_update),
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def delete_traccar_geofence(geofence_id):
+	"""
+	Deletes geofence in Traccar with given `geofence_id`.
+
+	:param geofence_id: int | str; Traccar geofence ID
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+
+	try:
+		response = requests.delete(
+			urljoin(traccar_server_url, f"/api/geofences?id={geofence_id}"),
+			headers=headers,
+			timeout=10,
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def link_traccar_object(first_param_key, first_param_val, second_param_key, second_param_val):
+	"""
+	Links one object to another in Traccar.
+
+	:param first_param_key: str; must be "userId", "deviceId", or "groupId"
+	:param first_param_val: the ID of the user, device, or group that links to second param
+	:param second_param_key: str; see Traccar permissions API reference for valid keys
+	https://www.traccar.org/api-reference/#tag/Permissions
+	:param second_param_val: the ID of the other key that links to first param
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	if first_param_key not in ["userId", "deviceId", "groupId"]:
+		frappe.throw(
+			_(
+				f"Invalid first parameter key name of {first_param_key}. Must by 'userId', 'deviceId', or 'groupId'."
+			)
+		)
+	try:
+		data = {first_param_key: first_param_val, second_param_key: second_param_val}
+		response = requests.post(
+			urljoin(traccar_server_url, "/api/permissions"),
+			headers=headers,
+			timeout=10,
+			data=json.dumps(data),
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
+def unlink_traccar_object(first_param_key, first_param_val, second_param_key, second_param_val):
+	"""
+	Un-links one object from another in Traccar.
+
+	:param first_param_key: str; must be "userId", "deviceId", or "groupId"
+	:param first_param_val: the ID of the user, device, or group to un-link from second param
+	:param second_param_key: str; see Traccar permissions API reference for valid keys
+	https://www.traccar.org/api-reference/#tag/Permissions
+	:param second_param_val: the ID of the other key that un-links from first param
+	:return: None (error raised if unsuccessful)
+	"""
+	traccar_server_url, credentials = get_server_url_and_credentials()
+	if not traccar_server_url:
+		return
+	headers = {"Authorization": f"Basic {credentials}", "Content-Type": "application/json"}
+	if first_param_key not in ["userId", "deviceId", "groupId"]:
+		frappe.throw(
+			_(
+				f"Invalid first parameter key name of {first_param_key}. Must by 'userId', 'deviceId', or 'groupId'."
+			)
+		)
+	try:
+		data = {first_param_key: first_param_val, second_param_key: second_param_val}
+		response = requests.delete(
+			urljoin(traccar_server_url, "/api/permissions"),
+			headers=headers,
+			timeout=10,
+			data=json.dumps(data),
+		)
+		response.raise_for_status()
+
+	except requests.exceptions.RequestException as e:
+		frappe.throw(_("Traccar server error: {0}").format(str(e)))
+
+
 def create_draft_asset_repair(asset_name, description):
 	company, cost_center = frappe.db.get_value("Asset", asset_name, ["company", "cost_center"])
 	ar = frappe.new_doc("Asset Repair")
@@ -413,3 +634,43 @@ def get_distance_conversion_factor():
 	traccar_settings = frappe.get_cached_doc("Traccar Integration", "Traccar Integration")
 	dist_cf = traccar_settings.distance_conversion_factor
 	return frappe.get_value("UOM Conversion Factor", dist_cf, "value") if dist_cf else 1
+
+
+def coords_list_to_wkt_format(shape, coords):
+	"""
+	Creates a Well-Known Text string to represent the geometry of the given shape and coords.
+	Wikipedia reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry
+
+	:param shape: string; either LINESTRING or POLYGON
+	:param coords: sequence of sequences containing coordinate pairs describing the given shape
+	:return: a WKT-formatted string with given shape's geometry
+	"""
+	coord_string = ", ".join([f"{lat} {lon}" for lat, lon in coords])
+	if shape.lower() == "linestring":
+		area = f"{shape.upper()} ({coord_string})"
+	else:
+		area = f"{shape.upper()} (({coord_string}))"
+	return area
+
+
+def get_geofence_change(prior_geofence_ids, current_geofence_ids):
+	"""
+	Returns a dict with "entered" and "exited" keys with respective lists of the geofence names.
+
+	:param prior_geofence_ids: list | None; value in prior Vehicle Log's geofence_ids field
+	:param current_geofence_ids: list | None; geofenceIds value in Vehicle's current Traccar
+	position data
+	:return: dict | None; {"entered": [geofence_name, ...], "exited": [geofence_name, ,,,]}
+	"""
+	prior = set(prior_geofence_ids) if prior_geofence_ids else set()
+	current = set(current_geofence_ids) if current_geofence_ids else set()
+	if prior == current:
+		entered, exited = [], []
+	else:
+		entered = [
+			frappe.get_value("Location", {"traccar_geofence_id": gfid}) for gfid in list(current - prior)
+		]
+		exited = [
+			frappe.get_value("Location", {"traccar_geofence_id": gfid}) for gfid in list(prior - current)
+		]
+	return frappe._dict({"entered": entered, "exited": exited})

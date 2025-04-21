@@ -80,47 +80,261 @@ point_template_geojson = {
 	],
 }
 
-locations = {
+locations_and_addresses = {
 	# Farm Locations
-	"Farm Office": [43.16081, -71.38377],  # Bear Brook State Park (61 Deerfield Rd, Allenstown, NH)
-	"Farm Garage": [43.16257, -71.38921],  # Bear Brook State Park Office / Toll Booth
-	"Farm Greenhouse": [43.14434, -71.35657],  # Podunk Rd Parking Lot in Bear Brook
-	"Farm Warehouse": [43.13871, -71.34741],  # Archery Course at Bear Brook
-	"Farm North Field": [43.13479, -71.36561],  # Hayes Field in Bear Brook
-	"Farm South Field": [43.11243, -71.36361],  # Bear Hill Pond Beach at Bear Brook
-	# Customer Locations
-	"Customer 1": [43.19436, -71.4585],  # Court House (5 Court St, Concord, NH)
-	"Customer 2": [43.20719, -71.53818],  # NH State House (107 N Main St, Concord, NH)
-	"Customer 3": [43.21818, -71.51654],  # Concord DMV (23 Hazen Drive, Concord, NH)
-	"Customer 4": [42.96644, -71.45256],  # Manchester DMV (377 S Willow St, Manchester, NH)
-	"Customer 5": [43.2205, -71.55583],  # Blossom Hill Cemetery (207 N State St, Concord, NH)
-	"Customer 6": [
-		43.21365,
-		-71.19854,
-	],  # Northwood Meadows State Park (755 First NH Turnpike, Northwood, NH)
-	"Customer 7": [43.09841, -71.65377],  # Clough State Park (455 Clough Park Rd, Weare, NH)
-	"Customer 8": [43.08289, -71.17066],  # Pawtuckaway State Park (128 Mountain Rd, Nottingham, NH)
-	"Customer 9": [
-		43.46922,
-		-71.88488,
-	],  # Hannah Duston Memorial Historic Site (298 US Route 4, Boscawen, NH)
-	"Customer 10": [
-		42.95429,
-		-71.88572,
-	],  # Greenfield State Park (52 Campground Road, Greenfield, NH)
-	"Customer 11": [
-		42.87173,
-		-71.29494,
-	],  # Robert Frost Farm Historic Site (122 Rockingham Rd, Derry, NH)
-	"Customer 12": [42.87584, -71.23921],  # Taylor Mill Historic Site (242 Island Pond Rd, Derry, NH)
-	"Customer 13": [
-		43.34743,
-		-71.84846,
-	],  # Rollins State Park (1066 Kearsage Mountain Road, Warner, NH)
-	"Customer 14": [43.14244, -71.50262],  # Bow Town Forest (17-23 Robinson Rd, Bow, NH)
-	"Customer 15": [43.10030, -71.52940],  # Nottingcook Forest (~56 South Bow Rd, Bow, NH)
-	# Other Locations - uncomment and rename as-needed. Key becomes location name in ERPNext
-	# "Other 1": [43.15400, -71.53043],  # Knox Forest (Heidi Ln, Bow, NH)
+	"Farm Office": {
+		# Bear Brook State Park (61 Deerfield Rd, Allenstown, NH)
+		"location": [43.16081, -71.38377],
+	},
+	"Farm Garage": {
+		# Bear Brook State Park Office / Toll Booth
+		"location": [43.16257, -71.38921],
+	},
+	"Farm Greenhouse": {
+		# Podunk Rd Parking Lot in Bear Brook
+		"location": [43.14434, -71.35657],
+	},
+	"Farm Warehouse": {
+		# Archery Course at Bear Brook
+		"location": [43.13871, -71.34741],
+	},
+	"Farm North Field": {
+		# Hayes Field in Bear Brook
+		"location": [43.13479, -71.36561],
+	},
+	"Farm South Field": {
+		# Bear Hill Pond Beach at Bear Brook
+		"location": [43.11243, -71.36361],
+	},
+	# Customers
+	"Andromeda Fruit Market": {
+		# Court House
+		"address": {
+			"address_line1": "5 Court St",
+			"address_title": "Andromeda Fruit Market",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Andromeda Fruit Market"}],
+			"name": "Andromeda Fruit Market-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.21016, -71.53859],
+	},
+	"Betelgeuse Bakery Suppliers": {
+		# NH State House
+		"address": {
+			"address_line1": "107 N Main St",
+			"address_title": "Betelgeuse Bakery Suppliers",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Betelgeuse Bakery Suppliers"}],
+			"name": "Betelgeuse Bakery Suppliers-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.20719, -71.53818],
+	},
+	"Cassiopeia Restaurant Group": {
+		# Concord DMV
+		"address": {
+			"address_line1": "23 Hazen Dr",
+			"address_title": "Cassiopeia Restaurant Group",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Cassiopeia Restaurant Group"}],
+			"name": "Cassiopeia Restaurant Group-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.21818, -71.51654],
+	},
+	"Delphinus Food Distributors": {
+		# Manchester DMV
+		"address": {
+			"address_line1": "377 S Willow St",
+			"address_title": "Delphinus Food Distributors",
+			"address_type": "Shipping",
+			"city": "Manchester",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Delphinus Food Distributors"}],
+			"name": "Delphinus Food Distributors-Shipping",
+			"pincode": "03103",
+			"state": "NH",
+		},
+		"location": [42.96644, -71.45256],
+	},
+	"Grus Goodies": {
+		# Blossom Hill Cemetery
+		"address": {
+			"address_line1": "207 N State St",
+			"address_title": "Grus Goodies",
+			"address_type": "Shipping",
+			"city": "Concord",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Grus Goodies"}],
+			"name": "Grus Goodies-Shipping",
+			"pincode": "03301",
+			"state": "NH",
+		},
+		"location": [43.22050, -71.55583],
+	},
+	"Hydra Produce Co": {
+		# Northwood Meadows State Park
+		"address": {
+			"address_line1": "755 First NH Turnpike",
+			"address_title": "Hydra Produce Co",
+			"address_type": "Shipping",
+			"city": "Northwood",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Hydra Produce Co"}],
+			"name": "Hydra Produce Co-Shipping",
+			"pincode": "03261",
+			"state": "NH",
+		},
+		"location": [43.21365, -71.19854],
+	},
+	"Phoenix Fruit, Ltd": {
+		# Clough State Park
+		"address": {
+			"address_line1": "455 Clough Park Rd",
+			"address_title": "Phoenix Fruit, Ltd",
+			"address_type": "Shipping",
+			"city": "Weare",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Phoenix Fruit, Ltd"}],
+			"name": "Phoenix Fruit, Ltd-Shipping",
+			"pincode": "03281",
+			"state": "NH",
+		},
+		# "location": [43.09841, -71.65377],  # commented to test geocoding
+	},
+	"Almacs Food Group": {
+		# Pawtuckaway State Park
+		"address": {
+			"address_line1": "128 Mountain Rd",
+			"address_title": "Almacs Food Group",
+			"address_type": "Shipping",
+			"city": "Nottingham",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Almacs Food Group"}],
+			"name": "Almacs Food Group-Shipping",
+			"pincode": "03290",
+			"state": "NH",
+		},
+		# "location": [43.08289, -71.17066],  # commented to test geocoding
+	},
+	"Beans and Dreams Roasters": {
+		# Hannah Dustin Memorial Historic Site
+		"address": {
+			"address_line1": "60 Commercial St",
+			"address_title": "Beans and Dreams Roasters",
+			"address_type": "Shipping",
+			"city": "Boscawen",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Beans and Dreams Roasters"}],
+			"name": "Beans and Dreams Roasters-Shipping",
+			"pincode": "03303",
+			"state": "NH",
+		},
+		"location": [43.28987, -71.59075],
+	},
+	"Happy Basket Food Distribution Group": {
+		# Greenfield State Park
+		"address": {
+			"address_line1": "52 Campground Road",
+			"address_title": "Happy Basket Food Distribution Group",
+			"address_type": "Shipping",
+			"city": "Greenfield",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Happy Basket Food Distribution Group"}],
+			"name": "Happy Basket Food Distribution Group-Shipping",
+			"pincode": "03047",
+			"state": "NH",
+		},
+		"location": [42.95429, -71.88572],
+	},
+	"Midtown Munchies Inc": {
+		# Robert Frost Farm Historic Site
+		"address": {
+			"address_line1": "122 Rockingham Rd",
+			"address_title": "Midtown Munchies Inc",
+			"address_type": "Shipping",
+			"city": "Derry",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Midtown Munchies Inc"}],
+			"name": "Midtown Munchies Inc-Shipping",
+			"pincode": "03038",
+			"state": "NH",
+		},
+		"location": [42.87173, -71.29494],
+	},
+	"My Way Cup Coffee": {
+		# Taylor Mill Historic Site
+		"address": {
+			"address_line1": "242 Island Pond Rd",
+			"address_title": "My Way Cup Coffee",
+			"address_type": "Shipping",
+			"city": "Derry",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "My Way Cup Coffee"}],
+			"name": "My Way Cup Coffee-Shipping",
+			"pincode": "03038",
+			"state": "NH",
+		},
+		# "location": [42.87584, -71.23921],  # commented to test geocoding
+	},
+	"Nom Nom Cafe": {
+		# Rollins State Park
+		"address": {
+			"address_line1": "1066 Kearsage Mountain Road",
+			"address_title": "Nom Nom Cafe",
+			"address_type": "Shipping",
+			"city": "Warner",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Nom Nom Cafe"}],
+			"name": "Nom Nom Cafe-Shipping",
+			"pincode": "03278",
+			"state": "NH",
+		},
+		"location": [
+			43.34743,
+			-71.84846,
+		],
+	},
+	"Sand Street Deli": {
+		# Bow Town Forest
+		"address": {
+			"address_line1": "17-23 Robinson Rd",
+			"address_title": "Sand Street Deli",
+			"address_type": "Shipping",
+			"city": "Bow",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Sand Street Deli"}],
+			"name": "Sand Street Deli-Shipping",
+			"pincode": "03304",
+			"state": "NH",
+		},
+		"location": [43.14244, -71.50262],
+	},
+	"Whole Harvest Grocery Group": {
+		# Nottingcook Forest
+		"address": {
+			"address_line1": "136-172 Woodhill Hooksett Rd",
+			"address_title": "Whole Harvest Grocery Group",
+			"address_type": "Shipping",
+			"city": "Bow",
+			"country": "United States",
+			"links": [{"link_doctype": "Customer", "link_name": "Whole Harvest Grocery Group"}],
+			"name": "Whole Harvest Grocery Group-Shipping",
+			"pincode": "03304",
+			"state": "NH",
+		},
+		"location": [43.10196, -71.50137],
+	},
 }
 
 # For all routes: distance in km, coords are (lat, lon)
@@ -277,7 +491,7 @@ routes = [
 			(43.162320000, -71.388560000),
 		],
 	},
-	{  # Farm truck (Ford): Farm Garage-Customer 4-Customer 5-Farm Garage
+	{  # Farm truck (Ford): Farm Garage-Delphinus Food Distributors-Grus Goodies-Farm Garage
 		"vehicle": "3812947",
 		"distance": 28.3 + 34.8 + 18.6,
 		"route": [
@@ -633,81 +847,131 @@ routes = [
 			(43.160480000, -71.402160000),
 		],
 	},
-	{  # Box truck (Chevrolet): Farm Office-Customer 1-Customer 2-Customer 3-Farm Office
+	{  # Box truck (Chevrolet): Farm Office-Andromeda Fruit Market-Betelgeuse Bakery Suppliers-Cassiopeia Restaurant Group-Farm Office
 		"vehicle": "2749813",
 		"distance": 19.7 + 0.5 + 2.8 + 18.7,
 		"route": [
 			# Farm Office to Customer 1
-			(43.15515, -71.36805),
-			(43.15639, -71.3699),
-			(43.15849, -71.37163),
-			(43.15967, -71.37269),
-			(43.16046, -71.37463),
-			(43.16028, -71.37854),
-			(43.16047, -71.38133),
-			(43.16122, -71.38315),
-			(43.16283, -71.3857),
-			(43.16306, -71.387),
-			(43.16255, -71.3884),
-			(43.16155, -71.39058),
-			(43.16147, -71.39256),
-			(43.16184, -71.39526),
-			(43.16141, -71.39688),
-			(43.16082, -71.40111),
-			(43.16038, -71.40233),
-			(43.15974, -71.40376),
-			(43.15877, -71.40461),
-			(43.15811, -71.40525),
-			(43.15832, -71.40579),
-			(43.16068, -71.40606),
-			(43.16349, -71.40613),
-			(43.16537, -71.40548),
-			(43.16833, -71.40385),
-			(43.17091, -71.40139),
-			(43.1733, -71.40009),
-			(43.17395, -71.40082),
-			(43.1766, -71.4031),
-			(43.17834, -71.40364),
-			(43.17931, -71.40405),
-			(43.18235, -71.40578),
-			(43.1845, -71.40703),
-			(43.18616, -71.40798),
-			(43.18708, -71.40902),
-			(43.18797, -71.41033),
-			(43.18925, -71.41302),
-			(43.1902, -71.41511),
-			(43.19125, -71.4181),
-			(43.19187, -71.41884),
-			(43.19426, -71.4206),
-			(43.19651, -71.4226),
-			(43.19851, -71.42441),
-			(43.20048, -71.42617),
-			(43.20168, -71.42749),
-			(43.20269, -71.42799),
-			(43.20068, -71.43133),
-			(43.19759, -71.43607),
-			(43.19637, -71.43798),
-			(43.19586, -71.43779),
-			(43.19542, -71.43825),
-			(43.19411, -71.44025),
-			(43.19287, -71.44222),
-			(43.19097, -71.44518),
-			(43.18939, -71.4475),
-			(43.19166, -71.45281),
-			(43.19436, -71.4585),
-			# Customer 1 to Customer 2
+			(43.155660000, -71.367280000),
+			(43.155150000, -71.368050000),
+			(43.155960000, -71.369370000),
+			(43.156390000, -71.369900000),
+			(43.157590000, -71.370980000),
+			(43.159260000, -71.372210000),
+			(43.159670000, -71.372690000),
+			(43.160440000, -71.374260000),
+			(43.160370000, -71.375460000),
+			(43.160310000, -71.376030000),
+			(43.160280000, -71.379620000),
+			(43.160470000, -71.381330000),
+			(43.161220000, -71.383150000),
+			(43.162350000, -71.384770000),
+			(43.162690000, -71.385340000),
+			(43.162770000, -71.385510000),
+			(43.162930000, -71.386030000),
+			(43.163060000, -71.387000000),
+			(43.162550000, -71.388400000),
+			(43.161880000, -71.389740000),
+			(43.161390000, -71.391310000),
+			(43.161470000, -71.392560000),
+			(43.161840000, -71.395260000),
+			(43.161410000, -71.396880000),
+			(43.160820000, -71.401110000),
+			(43.160380000, -71.402330000),
+			(43.159740000, -71.403760000),
+			(43.158770000, -71.404610000),
+			(43.158110000, -71.405250000),
+			(43.158320000, -71.405790000),
+			(43.160680000, -71.406060000),
+			(43.161820000, -71.407240000),
+			(43.161330000, -71.408810000),
+			(43.159540000, -71.411240000),
+			(43.157740000, -71.414050000),
+			(43.156630000, -71.415640000),
+			(43.155510000, -71.417800000),
+			(43.154930000, -71.419950000),
+			(43.154910000, -71.421940000),
+			(43.154390000, -71.423050000),
+			(43.151430000, -71.425520000),
+			(43.149730000, -71.427120000),
+			(43.148660000, -71.428130000),
+			(43.147300000, -71.430830000),
+			(43.147290000, -71.431960000),
+			(43.147100000, -71.436160000),
+			(43.147230000, -71.439520000),
+			(43.147250000, -71.445090000),
+			(43.147220000, -71.447870000),
+			(43.147070000, -71.452030000),
+			(43.146930000, -71.455320000),
+			(43.146840000, -71.457340000),
+			(43.146760000, -71.457640000),
+			(43.148270000, -71.459100000),
+			(43.150570000, -71.461240000),
+			(43.152380000, -71.462950000),
+			(43.156830000, -71.467220000),
+			(43.158530000, -71.468840000),
+			(43.161030000, -71.471260000),
+			(43.165320000, -71.475350000),
+			(43.169190000, -71.479070000),
+			(43.170820000, -71.480610000),
+			(43.174420000, -71.484080000),
+			(43.176920000, -71.486340000),
+			(43.177890000, -71.487470000),
+			(43.178550000, -71.488430000),
+			(43.179850000, -71.490040000),
+			(43.182360000, -71.492230000),
+			(43.186010000, -71.495120000),
+			(43.186840000, -71.496260000),
+			(43.187170000, -71.497140000),
+			(43.187720000, -71.499580000),
+			(43.188250000, -71.501870000),
+			(43.189220000, -71.505770000),
+			(43.189810000, -71.508090000),
+			(43.190400000, -71.510450000),
+			(43.191070000, -71.513130000),
+			(43.191800000, -71.516040000),
+			(43.192140000, -71.517850000),
+			(43.192460000, -71.519800000),
+			(43.192750000, -71.520970000),
+			(43.193410000, -71.524880000),
+			(43.196140000, -71.526860000),
+			(43.201800000, -71.530100000),
+			(43.204430000, -71.531440000),
+			(43.206780000, -71.532200000),
+			(43.208690000, -71.531900000),
+			(43.208950000, -71.532080000),
+			(43.208840000, -71.533570000),
+			(43.208670000, -71.535040000),
+			(43.208470000, -71.536830000),
+			(43.209140000, -71.537040000),
+			(43.209860000, -71.537460000),
+			(43.210250000, -71.537740000),
+			(43.210530000, -71.538170000),
+			(43.210400000, -71.538480000),
+			(43.209970000, -71.539530000),
 			(43.209900000, -71.539710000),
-			(43.209720000, -71.540200000),
-			(43.209680000, -71.540310000),
-			(43.208730000, -71.539800000),
-			(43.207950000, -71.539350000),
-			(43.207580000, -71.539160000),
-			(43.207190000, -71.538940000),
-			(43.206820000, -71.538740000),
-			(43.206490000, -71.538570000),
-			(43.206430000, -71.538540000),
-			(43.206560000, -71.538020000),
-			(43.206560000, -71.538020000),
+			# Customer 1 to Customer 2
+			(43.210200000, -71.538970000),
+			(43.210400000, -71.538480000),
+			(43.210460000, -71.538340000),
+			(43.210530000, -71.538170000),
+			(43.210610000, -71.537990000),
+			(43.210560000, -71.537960000),
+			(43.210250000, -71.537740000),
+			(43.210040000, -71.537580000),
+			(43.209900000, -71.537480000),
+			(43.209710000, -71.537360000),
+			(43.209570000, -71.537280000),
+			(43.208720000, -71.537060000),
+			(43.208570000, -71.537010000),
+			(43.208460000, -71.536980000),
+			(43.208360000, -71.536950000),
+			(43.208260000, -71.536870000),
+			(43.208050000, -71.536830000),
+			(43.207680000, -71.536720000),
+			(43.207610000, -71.536700000),
+			(43.207520000, -71.537210000),
+			(43.207270000, -71.538300000),
 			# Customer 2 to Customer 3
 			(43.206560000, -71.538020000),
 			(43.206880000, -71.536650000),
@@ -834,3 +1098,90 @@ routes = [
 		],
 	},
 ]
+
+# Geometry for geofence - append to GeoJSON "features" key, link to given "vehicle"s
+geofences = {
+	"Farm Greenhouse": {
+		"feature": {
+			"type": "Feature",
+			"properties": {},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [
+					[
+						[-71.360454, 43.145211],
+						[-71.359939, 43.142957],
+						[-71.358759, 43.141626],
+						[-71.355326, 43.141000],
+						[-71.353094, 43.142566],
+						[-71.351420, 43.144241],
+						[-71.351699, 43.146339],
+						[-71.352922, 43.147982],
+						[-71.356098, 43.148984],
+						[-71.359875, 43.148515],
+						[-71.360454, 43.145211],
+					]
+				],
+			},
+		},
+		"vehicle": ["AG-NH-7623", "NH-OHV-4521"],
+	},
+	"Andromeda Fruit Market": {
+		"feature": {
+			"type": "Feature",
+			"properties": {},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [
+					[
+						[-71.543788, 43.207639],
+						[-71.543788, 43.213175],
+						[-71.534347, 43.213175],
+						[-71.534347, 43.207639],
+						[-71.543788, 43.207639],
+					]
+				],
+			},
+		},
+		"vehicle": ["2749813"],
+	},
+	"Delphinus Food Distributors": {
+		"feature": {
+			"type": "Feature",
+			"properties": {},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [
+					[
+						[-71.462168, 42.962814],
+						[-71.462168, 42.971293],
+						[-71.444315, 42.971293],
+						[-71.444315, 42.962814],
+						[-71.462168, 42.962814],
+					]
+				],
+			},
+		},
+		"vehicle": ["2749813", "3812947"],
+	},
+	"Hydra Produce Co": {
+		"feature": {
+			"type": "Feature",
+			"properties": {},
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[-71.243093, 43.221784],
+					[-71.219748, 43.220095],
+					[-71.212280, 43.219345],
+					[-71.199062, 43.214215],
+					[-71.183527, 43.209148],
+					[-71.179064, 43.209461],
+					[-71.165159, 43.203080],
+					[-71.150396, 43.194383],
+				],
+			},
+		},
+		"vehicle": ["2749813"],
+	},
+}
