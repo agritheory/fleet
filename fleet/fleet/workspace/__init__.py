@@ -50,13 +50,14 @@ def get_coords() -> dict[str, Any]:
 			)
 
 	for vehicle in vs:
-		gps_location = frappe.get_doc("Vehicle", vehicle).gps_location
+		v = frappe.get_doc("Vehicle", vehicle)
+		gps_location = v.gps_location
+		driver_docname, driver_emp_name = v.most_recent_driver
 		if not gps_location:
 			continue
 
 		try:
 			location = json.loads(gps_location)
-
 			features.append(
 				{
 					"type": "Feature",

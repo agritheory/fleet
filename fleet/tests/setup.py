@@ -10,13 +10,17 @@ from pathlib import Path
 
 import frappe
 import frappe.defaults
+from frappe import _
 from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+from frappe.exceptions import ValidationError
 from frappe.utils.data import getdate
 from test_utils.utils.chart_of_accounts import setup_chart_of_accounts
 
+from fleet.fleet.traccar import get_traccar_driver, link_traccar_object
 from fleet.tests.fixtures.locations_and_routes import (
 	farm_geojson,
-	locations,
+	geofences,
+	locations_and_addresses,
 	point_template_geojson,
 	routes,
 )
@@ -83,6 +87,7 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	company_address.city = "Concord"
 	company_address.state = "New Hampshire"
 	company_address.pincode = "03301"
+
 	company_address.is_your_company_address = 1
 	company_address.append("links", {"link_doctype": "Company", "link_name": settings.company})
 	company_address.save()
@@ -98,9 +103,10 @@ def create_test_data(company_name="Quincy Cloudberry Farm"):
 	create_customers()
 	create_suppliers()
 	create_asset_categories_and_item_groups(settings)
-	create_locations()
 	create_vehicles()
 	create_vehicle_logs()
+	create_addresses_and_locations()
+	create_items_and_assets(settings)
 
 
 def create_traccar_integration():
@@ -519,12 +525,12 @@ def create_asset_categories_and_item_groups(settings=None):
 
 
 def create_vehicles(settings=None):
-	company = frappe.defaults.get_defaults().company if not settings else settings.company
 	fixtures_directory = Path().cwd().parent / "apps" / "fleet" / "fleet" / "tests" / "fixtures"
 	vehicles = json.loads((fixtures_directory / "vehicles.json").read_text(encoding="UTF-8"))
 	drivers = frappe.get_all("Driver", pluck="name")
 	driver_idx = 0
 	n_drivers = len(drivers)
+
 	for idx, vehicle in enumerate(vehicles):
 		if frappe.db.exists("Vehicle", vehicle.get("name")):
 			continue
@@ -538,37 +544,20 @@ def create_vehicles(settings=None):
 		driver_idx += 1
 		doc.save()
 
-		# Create an Item
-		item = frappe.new_doc("Item")
-		item.item_code = doc.name
-		item.item_name = doc.name
-		item.description = f"{doc.make}: {doc.vehicle_details}"
-		item.item_group = "Vehicle"
-		item.is_stock_item = 0
-		item.stock_uom = "Nos"
-		item.is_fixed_asset = 1
-		item.asset_category = "Vehicle"
-		item.save()
-
-		# Create an Asset
-		a = frappe.new_doc("Asset")
-		a.company = company
-		a.item_code = item.item_code
-		a.asset_name = item.item_code
-		a.location = "Farm Garage"
-		a.asset_owner = "Company"
-		a.asset_owner_company = company
-		a.is_existing_asset = 1
-		a.cost_center = "Main - QCF"
-		a.purchase_date = a.available_for_use_date = doc.acquisition_date
-		a.gross_purchase_amount = doc.vehicle_value
-		a.policy_number = doc.policy_no
-		a.insurer = doc.insurance_company
-		a.insurance_start_date = doc.start_date
-		a.insurance_end_date = doc.end_date
-		a.maintenance_required = 1
-		a.save()
-		a.submit()
+		# Link drivers to vehicle in Traccar
+		for d in doc.drivers:
+			d_name = d.driver
+			driver = get_traccar_driver(d_name)
+			if driver and doc.traccar_id:
+				try:
+					link_traccar_object("deviceId", doc.traccar_id, "driverId", driver["id"])
+				except ValidationError as e:
+					frappe.log_error(
+						title=_(f"Error linking Driver {d_name} to Vehicle {doc.name} in Traccar"),
+						message=_(f"{e}\n\n{frappe.get_traceback()}"),
+						reference_doctype="Vehicle",
+						reference_name=doc.name,
+					)
 
 
 def create_vehicle_logs(settings=None):
@@ -628,12 +617,13 @@ def create_suppliers(settings=None):
 		doc.save()
 
 
-def create_locations(settings=None):
+def create_addresses_and_locations(settings=None):
+	# Dependent on Vehicle
 	# Create the Farm parent location (GeoJSON with polygon and points)
-	f_lat, f_lon = locations.get("Farm Office")
-	farm_loc_keys = [k for k in locations.keys() if k.startswith("Farm")]
+	f_lat, f_lon = locations_and_addresses["Farm Office"]["location"]
+	farm_loc_keys = [k for k in locations_and_addresses.keys() if k.startswith("Farm")]
 	for key in farm_loc_keys:
-		lat, lon = locations.get(key)
+		lat, lon = locations_and_addresses[key]["location"]
 		feat = copy.deepcopy(point_template_geojson["features"][0])
 		feat["properties"]["name"] = key
 		feat["properties"]["description"] = key
@@ -648,27 +638,89 @@ def create_locations(settings=None):
 	farm_l.location = json.dumps(farm_geojson)
 	farm_l.save()
 
-	# Create Farm and Customer locations (GeoJSON with point only)
-	customers = frappe.get_all(
-		"Customer", ["customer_name"], order_by="creation", pluck="customer_name"
+	# Create addresses and locations (GeoJSON with point and geofence as-needed)
+	for key in locations_and_addresses.keys():
+		location = locations_and_addresses[key].get("location")
+		address = locations_and_addresses[key].get("address", {})
+		name = address.get("name", key)
+
+		if location:
+			lat, lon = location
+			geojson = copy.deepcopy(point_template_geojson)
+			geojson["features"][0]["properties"]["name"] = name
+			geojson["features"][0]["properties"]["description"] = name
+			geojson["features"][0]["geometry"]["coordinates"] = [lon, lat]
+			geofence_feat = geofences.get(key)
+			if geofence_feat:
+				geojson["features"].append(geofence_feat["feature"])
+
+			l = frappe.new_doc("Location")
+			l.location_name = name
+			if key.startswith("Farm"):
+				l.parent_location = farm_l.name
+			l.latitude = lat
+			l.longitude = lon
+			l.sync_traccar_geofence = 1 if geofence_feat else 0
+			if geofence_feat and not os.environ.get("CI"):
+				for v in geofence_feat["vehicle"]:
+					l.append("geofenced_vehicle", {"vehicle": v})
+			l.location = json.dumps(geojson)
+			l.save()
+
+		if address:
+			addr = frappe.new_doc("Address")
+			addr.update(address)
+			if location:
+				addr.append("links", {"link_doctype": l.doctype, "link_name": l.name})
+			addr.save()
+
+	# Link Farm Office location to Company Address
+	co_addr = frappe.get_doc("Address", {"is_your_company_address": 1})
+	l_name = frappe.get_value("Location", {"location_name": "Farm Office"})
+	co_addr.append(
+		"links",
+		{
+			"link_doctype": "Location",
+			"link_name": l_name,
+		},
 	)
-	for key, coords in locations.items():
-		lat, lon = coords
-		name = key
-		if key.startswith("Customer"):
-			idx = int(key.split()[-1]) - 1
-			name = customers[idx]
+	co_addr.save()
 
-		geojson = copy.deepcopy(point_template_geojson)
-		geojson["features"][0]["properties"]["name"] = name
-		geojson["features"][0]["properties"]["description"] = name
-		geojson["features"][0]["geometry"]["coordinates"] = [lon, lat]
 
-		l = frappe.new_doc("Location")
-		l.location_name = name
-		if key.startswith("Farm"):
-			l.parent_location = farm_l.name
-		l.latitude = lat
-		l.longitude = lon
-		l.location = json.dumps(geojson)
-		l.save()
+def create_items_and_assets(settings=None):
+	# Dependent on Vehicle and Location
+	company = frappe.defaults.get_defaults().company if not settings else settings.company
+	for v in frappe.get_all("Vehicle"):
+		doc = frappe.get_doc("Vehicle", v)
+
+		# Create an Item
+		item = frappe.new_doc("Item")
+		item.item_code = doc.name
+		item.item_name = doc.name
+		item.description = f"{doc.make}"
+		item.item_group = "Vehicle"
+		item.is_stock_item = 0
+		item.stock_uom = "Nos"
+		item.is_fixed_asset = 1
+		item.asset_category = "Vehicle"
+		item.save()
+
+		# Create an Asset
+		a = frappe.new_doc("Asset")
+		a.company = company
+		a.item_code = item.item_code
+		a.asset_name = item.item_code
+		a.location = "Farm Garage"
+		a.asset_owner = "Company"
+		a.asset_owner_company = company
+		a.is_existing_asset = 1
+		a.cost_center = "Main - QCF"
+		a.purchase_date = a.available_for_use_date = doc.acquisition_date
+		a.gross_purchase_amount = doc.vehicle_value
+		a.policy_number = doc.policy_no
+		a.insurer = doc.insurance_company
+		a.insurance_start_date = doc.start_date
+		a.insurance_end_date = doc.end_date
+		a.maintenance_required = 1
+		a.save()
+		a.submit()

@@ -9,7 +9,10 @@
 		"rpm": 0,
 		"speed": 0,
 		"engine_temperature": 86.7,
-		"fuel_qty": 10
+		"fuel_qty": 10,
+		"geofence_ids": "1",
+		"geofences_entered": "",
+		"geofences_exited": ""
 	},
 	{
 		"doctype": "Vehicle Log",
@@ -21,7 +24,10 @@
 		"rpm": 0,
 		"speed": 0,
 		"engine_temperature": 92.1,
-		"fuel_qty": 7
+		"fuel_qty": 7,
+		"geofence_ids": "",
+		"geofences_entered": "",
+		"geofences_exited": ""
 	},
 	{
 		"doctype": "Vehicle Log",
@@ -33,7 +39,10 @@
 		"rpm": 0,
 		"speed": 0,
 		"engine_temperature": 77.9,
-		"fuel_qty": 12
+		"fuel_qty": 12,
+		"geofence_ids": "",
+		"geofences_entered": "",
+		"geofences_exited": ""
 	},
 	{
 		"doctype": "Vehicle Log",
