@@ -32,7 +32,7 @@ def install_states_and_provinces():
 
 def install_custom_html_blocks():
 	app_path = frappe.get_app_path("fleet")
-	
+
 	with open(os.path.join(app_path, "fleet_home.html")) as f:
 		fleet_home_html = f.read()
 
