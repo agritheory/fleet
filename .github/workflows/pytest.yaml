@@ -77,6 +77,8 @@ jobs:
 
       - name: Install Test Fixtures
         working-directory: /home/runner/frappe-bench
+        env:
+          CI: true
         run: |
           bench execute 'fleet.tests.setup.before_test'
 
