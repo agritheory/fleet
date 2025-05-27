@@ -17,7 +17,7 @@ issues = "https://github.com/agritheory/fleet/issues"
 
 [tool.poetry]
 requires-poetry = ">=2.0"
-version =  "15.0.0"
+version =  "15.1.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
