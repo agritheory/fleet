@@ -16,8 +16,9 @@
 	"doctype": "Workspace",
 	"for_user": "",
 	"hide_custom": 0,
+	"icon": "fleet",
 	"idx": 0,
-	"indicator_color": "green",
+	"indicator_color": "",
 	"is_hidden": 0,
 	"label": "Fleet",
 	"links": [
@@ -61,7 +62,7 @@
 			"type": "Link"
 		}
 	],
-	"modified": "2024-11-28 19:27:17.009473",
+	"modified": "2025-04-09 19:13:54.675022",
 	"modified_by": "Administrator",
 	"module": "Fleet",
 	"name": "Fleet",

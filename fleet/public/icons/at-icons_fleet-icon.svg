@@ -1,0 +1,22 @@
+<svg id="frappe-symbols" style="stroke:black; fill:black; stroke-width: 11px; stroke-miterlimit:10" class="d-block" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-fleet" viewBox="0 0 146.59 146.59" xmlns="http://www.w3.org/2000/svg">
+      <path d="M102.12,66.49v-31.23c0-5.07-4.11-9.18-9.18-9.18h-53.23c-5.07,0-9.18,4.11-9.18,9.18v31.23h-9.44c-4.91,0-8.89,3.98-8.89,8.89v35.66h108.25v-35.66c0-4.91-3.98-8.89-8.89-8.89h-9.44Z" style="fill: none;"/>
+      <polyline points="30.52 41.01 30.52 15.03 19.38 3.89" style="fill: none; "/>
+      <polyline points="102.1 41.01 102.1 15.03 113.24 3.89" style="fill: none; "/>
+      <rect x="46.01" y="42.43" width="40.62" height="21.91"style="stroke:none;" />
+      <rect x="5.5" y="111.03" width="121.65" height="15.68" rx="7.14" ry="7.14" style="fill: none; "/>
+      <g>
+        <path d="M12.2,126.71h23.02v10.61c0,3.77-3.06,6.83-6.83,6.83h-9.37c-3.77,0-6.83-3.06-6.83-6.83v-10.61h0Z" style="fill: none; "/>
+        <path d="M97.42,126.71h23.02v10.61c0,3.77-3.06,6.83-6.83,6.83h-9.37c-3.77,0-6.83-3.06-6.83-6.83v-10.61h0Z" style="fill: none; "/>
+      </g>
+      <g>
+        <circle style="stroke:none;" cx="27.75" cy="84.93" r="7"/>
+        <circle style="stroke:none;" cx="104.89" cy="84.93" r="7"/>
+      </g>
+      <path d="M51.65,77.92h29.34c4.12,0,7.46,3.34,7.46,7.46v25.66h-44.26v-25.66c0-4.12,3.34-7.46,7.46-7.46Z" style="fill: none; "/>
+      <g>
+        <line x1="15.05" y1="58.72" x2="15.05" y2="33.18" style="fill: none; "/>
+        <line x1="117.59" y1="58.72" x2="117.59" y2="33.18" style="fill: none; "/>
+      </g>
+    </symbol>
+  </svg>
