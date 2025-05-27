@@ -58,7 +58,7 @@ doctype_calendar_js = {
 # Svg Icons
 # ------------------
 # include app icons in desk
-# app_include_icons = "fleet/public/icons.svg"
+app_include_icons = ["fleet/icons/at-icons_fleet-icon.svg"]
 
 # Home Pages
 # ----------
@@ -145,6 +145,23 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+	"Address": {
+		"validate": [
+			"fleet.fleet.overrides.address.validate_single_location_in_links",
+		]
+	},
+	"Driver": {
+		"before_save": [
+			"fleet.fleet.traccar.add_traccar_driver",
+		]
+	},
+	"Location": {
+		"validate": [
+			"fleet.fleet.overrides.location.validate_geofence_geometry",
+			"fleet.fleet.overrides.location.validate_geofenced_vehicles_have_traccar_id",
+			"fleet.fleet.overrides.location.sync_traccar_geofence",
+		]
+	},
 	"Vehicle": {
 		"validate": [
 			"fleet.fleet.overrides.vehicle.validate_poll_frequency_cron_format",
@@ -153,11 +170,6 @@ doc_events = {
 			"fleet.fleet.overrides.vehicle.check_schedule_poll_frequency",
 			"fleet.fleet.traccar.add_traccar_device",
 		],
-	},
-	"Driver": {
-		"before_save": [
-			"fleet.fleet.traccar.add_traccar_driver",
-		]
 	},
 }
 
