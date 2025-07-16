@@ -130,7 +130,7 @@
 			"modified": "2025-07-15 06:23:42.643820",
 			"modified_by": "Administrator",
 			"module": "Fleet",
-			"name": "Location-custom_default_activity_type",
+			"name": "Location-default_activity_type",
 			"no_copy": 0,
 			"non_negative": 0,
 			"options": "Activity Type",

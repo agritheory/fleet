@@ -11,14 +11,16 @@ def fetch_timesheet_from_vehicle_log(employee, start_date, end_date):
 	# Fetch all vehicle logs for the employee with geofence entered, ordered by time
 	vehicle_logs = frappe.db.sql(
 		"""
-        SELECT name, employee, creation, geofences_entered, geofences_exited
-        FROM `tabVehicle Log`
-        WHERE employee = %s
-            AND (geofences_entered IS NOT NULL AND geofences_entered!=''
-          OR geofences_exited IS NOT NULL AND geofences_exited !='')
-          AND creation BETWEEN %s AND %s
-        ORDER BY creation ASC
-    """,
+		SELECT name, employee, creation, geofences_entered, geofences_exited
+		FROM `tabVehicle Log`
+		WHERE employee = %s
+		  AND (
+				(geofences_entered IS NOT NULL AND geofences_entered != '')
+			 OR (geofences_exited IS NOT NULL AND geofences_exited != '')
+		  )
+		  AND creation BETWEEN %s AND %s
+		ORDER BY creation ASC
+		""",
 		(employee, start_date, end_date),
 		as_dict=1,
 	)
