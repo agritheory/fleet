@@ -71,12 +71,17 @@ export TRACCAR_USERNAME='<account username>'
 export TRACCAR_PASSWORD='<account password>'
 # Optional: if the port number is different than the simulate default of 5055
 export TRACCAR_PORT=<port number>
+
+# Source the shell profile script (or open a new shell) to ensure the variables are available before running the `bench execute` commands
+source ./path/to/shell_profile_file
 ```
 3) With the docker instance running, install the demo data into your local site:
 ```shell
 bench execute 'fleet.tests.setup.before_test'
 ```
-4) Simulate GPS data:
+4) Log into the local site and check that the test script properly created the Traccar Integration document with the Traccar URL and login credentials. Also check the Traccar instance - if the test data synced with Traccar correctly, the map home screen that shows after logging in will display the vehicles as devices in the sidebar. If not, make sure the environment variables are available to the current shell, then reinstall the local site and run step 3 again.
+
+5) Simulate GPS data:
 ```shell
 bench execute 'fleet.tests.simulate_gps_data.simulate'
 ```
