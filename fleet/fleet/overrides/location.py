@@ -77,7 +77,6 @@ def sync_traccar_geofence(doc, method=None):
 			if link.link_doctype == "Location":
 				doc = frappe.get_doc("Location", link.link_name)
 	old_doc = doc.get_doc_before_save()
-	loc = json.loads(doc.location)
 
 	if not doc.sync_traccar_geofence:
 		if old_doc and old_doc.sync_traccar_geofence and old_doc.traccar_geofence_id:
@@ -96,7 +95,16 @@ def sync_traccar_geofence(doc, method=None):
 					reference_name=doc.name,
 				)
 
+	elif not doc.location:
+		frappe.msgprint(
+			msg=_(
+				"No geofence location data found - please draw a LineString, PolyLine, or Polygon to represent the geofence in the Location field and try saving again."
+			),
+			title=_("Traccar Geofence Not Synced"),
+		)
+
 	elif doc.traccar_geofence_id:
+		loc = json.loads(doc.location)
 		if doc.has_value_changed("location"):
 			# geometry in Location changed, update geofence
 			for feature in loc["features"]:
@@ -124,6 +132,7 @@ def sync_traccar_geofence(doc, method=None):
 
 	elif not doc.traccar_geofence_id:
 		# new geofence, create in Traccar and link vehicles
+		loc = json.loads(doc.location)
 		for feature in loc["features"]:
 			feat_type = feature.get("geometry", {}).get("type")
 			if feat_type not in ["LineString", "Polygon"]:
