@@ -72,6 +72,7 @@ repos:
       - id: clean_customized_doctypes
         args: ['--app', 'fleet']
       - id: validate_customizations
+      - id: bylines
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.5.1
