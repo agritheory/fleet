@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2025, AgriTheory and contributors
+For license information, please see license.txt-->
+
 # Changelog
 
 ## [v15.1.1] - 2025-10-08
@@ -23,15 +26,15 @@
 
 ### Changes from Pull Requests
 
-Fixed an issue where adding a location without syncing caused an error. Now, the system only attempts to load location data when syncing is enabled, preventing errors and improving the user experience.
+Fixed an issue where adding a Location caused an error when Traccar syncing wasn't enabled. Now, the system only attempts to load location data when syncing is enabled, preventing errors and improving the user experience.
   _Source: PR #19_
 
-Updated installation instructions with troubleshooting information to help you get started more easily. If you encounter any issues during the setup process, our new guide includes helpful tips and solutions to resolve common problems. This should make it simpler for you to use our product right away.
+Updated installation instructions with troubleshooting information to help you get started more easily. If you encounter any issues during the setup process, our new guide includes helpful tips and solutions to resolve common problems. This should simplify and streamline installation.
   _Source: PR #15_
 
 **Route Optimization Update**
 
-We've made some significant improvements to the route optimization feature in our system. 
+Added a route optimization feature to the application for Delivery Trips. Given a number of stops defined in a Delivery Trip, this feature uses Pyvroom to find the optimal route.
 
   _Source: PR #13_
 
@@ -65,16 +68,15 @@ This update adds style tabs to custom HTML blocks in the Frappe form to match th
 - Removed unused icons.
 
 **Additional Notes:**
-- A new Fleet icon has been added, but its placement in the workspace is still pending. Please provide feedback on where this icon should be located.
+- Added a new Fleet icon
 
-For any questions or issues, please reach out to the development team.
   _Source: PR #12_
 
 **Added Geofence Features**
 
 We're excited to announce the addition of geofence features in our system! With these new capabilities, you can now:
 
-1. **Draw Polygons, Rectangles, and Polylines**: Easily create geofences on a map by drawing polygons, rectangles, or polylines. This allows you to define areas where specific events or actions should occur. Circles are not supported by Traccar will error.
+1. **Draw Polygons, Rectangles, and Polylines**: Easily create geofences on a map by drawing polygons, rectangles, or polylines. This allows you to define the geofence in an ERPNext Location, which then syncs with Traccar. (Note that Traccar no longer support the circle shape to define a geofence.)
 
 2. **Link Geofences to Devices**: Assign devices to geofences so that when they enter or leave these areas, alerts can be triggered based on your predefined rules.
 
@@ -82,7 +84,7 @@ We're excited to announce the addition of geofence features in our system! With 
 
 4. **Alarm Functionality Based on Vehicle Logs**: Receive alerts when vehicles enter or exit geofences, helping you stay informed about their movements in real-time.
 
-5. **Customize Address Doctype**: Enhance the address doctype by adding custom fields and validation to ensure accuracy and consistency.
+5. **Customize Address Doctype**: Enhances the Address doctype by allowing a dynamic link to a Location doctype, to sync a physical address with its corresponding latitude and longitude.
 
 6. **Sync Geofences with Traccar**: Automatically sync geofences between ERPNext and Traccar, ensuring that all relevant data is up-to-date and consistent across both systems.
 
@@ -90,11 +92,10 @@ We're excited to announce the addition of geofence features in our system! With 
 
 **Asset and Vehicle Integration Update**
 
-We're excited to announce that our system now includes a new feature for integrating assets and vehicles! This update allows you to create an "Asset Category" called "Vehicle," which helps organize your vehicle data more efficiently. You can also add new item groups and items related to each vehicle, making it easier to manage all your vehicle information in one place.
+We're excited to announce that our system now includes a new feature for integrating assets and vehicles! This update allows you to create an "Asset Category" called "Vehicle" and utilize ERPNext's built-in asset repair functionality if a tracked vehicle triggers a Traccar diagnostic alert.
 
-Additionally, if a diagnostic is found during the creation of a vehicle log, our system will automatically create a draft asset repair document for you. This allows you to update the cost and repairs done on the asset or delete the document if it's not needed. This feature ensures that you always have up-to-date information about your vehicles and their maintenance.
+If a diagnostic is found during the creation of a vehicle log, our system will automatically create a draft asset repair document for your review. This allows you to update the cost and repairs done on the asset or delete the document if it's not needed. This feature ensures that you always have up-to-date information about your vehicles and their maintenance.
 
-If you already have an existing asset, you can mark it as such in the asset doctype without needing to link it to a purchase receipt or invoice. This simplifies the process of managing your assets and makes it easier for you to keep track of all your vehicle-related data.
   _Source: PR #7_
 
 **Traccar Integration Update**
