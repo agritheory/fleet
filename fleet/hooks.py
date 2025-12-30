@@ -53,6 +53,7 @@ required_apps = ["erpnext", "hrms"]
 doctype_calendar_js = {
 	"Vehicle": "public/js/fleet_calendar.js",
 	"Driver": "public/js/fleet_calendar.js",
+	"Timesheet": "public/js/timesheet.js",
 }
 
 # Svg Icons
