@@ -11,7 +11,7 @@ repos:
         exclude: '.*json$|.*txt$|.*csv|.*md|.*svg'
       - id: check-yaml
       - id: no-commit-to-branch
-        args: ['--branch', 'version-15']
+        args: ['--branch', 'version-15', '--branch', 'version-16']
       - id: check-merge-conflict
       - id: check-ast
       - id: check-json
@@ -58,7 +58,7 @@ repos:
         args: ['--app', 'fleet']
       - id: validate_customizations
       - id: patch_linters
-      - id: track_overrides
+        args: ['--app', 'fleet']
 
   - repo: local
     hooks:
