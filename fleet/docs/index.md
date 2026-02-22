@@ -3,6 +3,11 @@ For license information, please see license.txt-->
 
 # Fleet
 
+<div class="byline">
+  Tyler Matteson 2025-12-30
+</div>
+
+
 Fleet offers a full service fleet management solution by bringing real-time vehicle telemetry into ERPNext. This enables fleet managers to view vehicle locations, manage routes, track remote inventory and monitor delivery status using an enterprise-level
 
 Key features include automatic geofence creation by geocoding Addresses, vehicle location tracking on a unified map view, and status monitoring that ties into ERPNext's maintenance and scheduling systems. Alerts can be configured based on telemetry, location and/or schedule as required.

@@ -14,7 +14,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name:  Track Overrides
-        uses: diamorafaela/track-overrides@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Track Overrides
+        uses: agritheory/test_utils/actions/track_overrides@main
