@@ -7,7 +7,6 @@ For license information, please see license.txt-->
   Tyler Matteson 2025-12-30
 </div>
 
-
 Fleet brings real-time vehicle tracking into ERPNext. Instead of switching between a GPS tracking system and your ERP, fleet managers can monitor vehicles, track deliveries, and schedule maintenance from a single interface.
 
 Fleet connects ERPNext to [Traccar](https://www.traccar.org/), an open-source GPS tracking platform. Vehicles equipped with GPS devices report their positions to Traccar, and Fleet syncs this data into ERPNext automatically. This creates a record of where vehicles have been, who was driving, and what condition the vehicle was in at each point.
