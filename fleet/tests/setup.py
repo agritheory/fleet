@@ -406,10 +406,11 @@ def create_employees(settings, employees):
 		"employee_self_service"
 	] = 1000
 	company_domain = frappe.get_value("Company", settings.company, "domain")
+	abbr = frappe.get_value("Company", settings.company, "abbr")
 
 	departments = shift_map.keys()
 	for dept in departments:
-		if not frappe.db.exists("Department", dept):
+		if not frappe.db.exists("Department", {"department_name": dept, "company": settings.company}):
 			d = frappe.new_doc("Department")
 			d.department_name = dept
 			d.company = settings.company
@@ -441,7 +442,9 @@ def create_employees(settings, employees):
 		emp.gender = employee.gender
 		emp.date_of_birth = employee.date_of_birth
 		emp.date_of_joining = employee.date_of_joining
-		emp.department = "Management" if (employee_number + 1) % 3 == 0 else "Operations"
+		emp.department = (
+			f"Management - {abbr}" if (employee_number + 1) % 3 == 0 else f"Operations - {abbr}"
+		)
 		emp.designation = "Associate"
 		emp.user_id = user.name
 		emp.cell_number = employee.phone
