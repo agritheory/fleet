@@ -406,6 +406,15 @@ def create_employees(settings, employees):
 		"employee_self_service"
 	] = 1000
 	company_domain = frappe.get_value("Company", settings.company, "domain")
+
+	departments = shift_map.keys()
+	for dept in departments:
+		if not frappe.db.exists("Department", dept):
+			d = frappe.new_doc("Department")
+			d.department_name = dept
+			d.company = settings.company
+			d.save()
+
 	for employee_number, employee in enumerate(employees, start=10):
 		employee = frappe._dict(employee)
 		user = frappe.new_doc("User")
