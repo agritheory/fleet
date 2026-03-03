@@ -442,8 +442,9 @@ def create_employees(settings, employees):
 		emp.gender = employee.gender
 		emp.date_of_birth = employee.date_of_birth
 		emp.date_of_joining = employee.date_of_joining
+		emp_dept = "Management" if (employee_number + 1) % 3 == 0 else "Operations"
 		emp.department = (
-			f"Management - {abbr}" if (employee_number + 1) % 3 == 0 else f"Operations - {abbr}"
+			f"{emp_dept} - {abbr}" if (employee_number + 1) % 3 == 0 else f"{emp_dept} - {abbr}"
 		)
 		emp.designation = "Associate"
 		emp.user_id = user.name
@@ -470,7 +471,7 @@ def create_employees(settings, employees):
 		shift.company = settings.company
 		shift.status = "Active"
 		shift.start_date = emp.date_of_joining
-		shift_type = settings.shift_map.get(emp.department)
+		shift_type = settings.shift_map.get(emp_dept)
 		if len(shift_type) > 1:
 			shift.shift_type = shift_type[0] if employee_number % 2 == 0 else shift_type[1]
 		else:
