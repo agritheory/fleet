@@ -5,6 +5,7 @@ on:
     branches:
       - version-14
       - version-15
+      - version-16
   pull_request:
 
 env:
@@ -24,7 +25,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Install mypy
         run: pip install mypy
@@ -52,7 +53,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Install Black (Frappe)
         run: pip install git+https://github.com/frappe/black.git
