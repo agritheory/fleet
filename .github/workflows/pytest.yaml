@@ -8,6 +8,7 @@ on:
       - version-16
       - version-16
       - version-16
+      - version-16
   pull_request:
 
 permissions:
@@ -17,6 +18,7 @@ permissions:
   pull-requests: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: \"true\"
     BRANCH_NAME: ${{ github.base_ref || github.ref_name }}
 
 jobs:
@@ -46,7 +48,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           check-latest: true
           cache: 'yarn'
 
