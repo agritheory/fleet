@@ -7,11 +7,11 @@ Fleet Integration for ERPNext
 
 ## Install Instructions
 
-Set up a new bench, substitute a path to the python version to use, which should 3.10 latest
+Set up a new bench, substitute a path to the python version to use, which should 3.13 latest
 
 ```
 # for linux development
-bench init --frappe-branch version-15 {{ bench name }} --python ~/.pyenv/versions/3.10.10/bin/python3
+bench init --frappe-branch version-16 {{ bench name }} --python ~/.pyenv/versions/3.13/bin/python3
 ```
 Create a new site in that bench
 ```
@@ -21,9 +21,9 @@ bench use {{ site name }}
 ```
 Download all required applications, including this one
 ```
-bench get-app erpnext --branch version-15
-bench get-app hrms --branch version-15
-bench get-app fleet --branch version-15 git@github.com:AgriTheory/fleet.git
+bench get-app erpnext --branch version-16
+bench get-app hrms --branch version-16
+bench get-app fleet --branch version-16 git@github.com:AgriTheory/fleet.git
 ```
 Install all apps
 ```
