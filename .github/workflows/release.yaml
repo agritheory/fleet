@@ -8,6 +8,10 @@ on:
       - version-16
       - version-16
       - version-16
+      - version-16
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   release:
     name: Release
