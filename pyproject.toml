@@ -1,12 +1,18 @@
 [project]
 name = "fleet"
 description = "Fleet Management Tools for ERPNext"
-authors = [
-    { name = "AgriTheory", email = "support@agritheory.com" },
-]
 readme = "README.md"
-license = { file = "license.txt" }
-dynamic = [ "version", "dependencies", "requires-python" ]
+dynamic = [ "version", "dependencies", "requires-python",]
+[[project.authors]]
+name = "AgriTheory"
+email = "support@agritheory.com"
+
+[build-system]
+requires = [ "poetry-core>=2.0.0,<3.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[project.license]
+file = "license.txt"
 
 [project.urls]
 homepage = "https://github.com/agritheory/fleet"
@@ -17,27 +23,10 @@ issues = "https://github.com/agritheory/fleet/issues"
 
 [tool.poetry]
 requires-poetry = ">=2.0"
-version =  "15.2.0"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.14"
-test_utils = { git = "https://github.com/agritheory/test_utils.git" }
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.2.2"
-pytest-cov = "^5.0.0"
-pytest-order = "^1.2.1"
-mypy = "^1.10.0"
+version = "16.0.0"
 
 [tool.codespell]
 skip = "CHANGELOG.md"
-
-[tool.pytest.ini_options]
-addopts = "-s --disable-warnings"
 
 [tool.black]
 line-length = 99
@@ -51,17 +40,30 @@ use_parentheses = true
 ensure_newline_before_comments = true
 indent = "\t"
 
+[tool.semantic_release]
+version_toml = [ "pyproject.toml:tool.poetry.version",]
+version_variables = [ "fleet/__init__.py:__version__",]
+build_command = "echo 1"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.14"
+
+[tool.pytest.ini_options]
+addopts = "-s --disable-warnings"
+
 [tool.bench.frappe-dependencies]
-frappe = ">=15.0.0,<16.0.0"
+frappe = ">=16.0.0-dev,<17.0.0"
 erpnext = ">=15.0.0,<16.0.0"
 hrms = ">=15.0.0,<16.0.0"
 
-[tool.semantic_release]
-version_toml = ["pyproject.toml:tool.poetry.version"]
-version_variables = [
-    "fleet/__init__.py:__version__"
-]
-build_command = "echo 1"
+[tool.poetry.dependencies.test_utils]
+git = "https://github.com/agritheory/test_utils.git"
 
 [tool.semantic_release.branches.version]
 match = "version-(15|16)"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-cov = "^5.0.0"
+pytest-order = "^1.2.1"
+mypy = "^1.10.0"
