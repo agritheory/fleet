@@ -9,6 +9,7 @@ on:
       - version-16
       - version-16
       - version-16
+      - version-16
   pull_request:
 
 permissions:
