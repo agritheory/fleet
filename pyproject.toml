@@ -23,7 +23,7 @@ issues = "https://github.com/agritheory/fleet/issues"
 
 [tool.poetry]
 requires-poetry = ">=2.0"
-version = "16.0.0"
+version = "15.2.1"
 
 [tool.codespell]
 skip = "CHANGELOG.md"
