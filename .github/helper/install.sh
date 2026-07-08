@@ -31,7 +31,7 @@ BRANCH_NAME="${BRANCH_NAME:-version-16}"
 echo "BRANCH_NAME: ${BRANCH_NAME}"
 
 git clone https://github.com/frappe/frappe --branch "${BRANCH_NAME}"
-bench init frappe-bench --frappe-path ~/frappe --python "$(which python)" --skip-assets --ignore-exist
+bench init frappe-bench --frappe-path ~/frappe --python "$(which python)" --skip-assets --skip-redis-config-generation --ignore-exist
 
 mkdir ~/frappe-bench/sites/test_site
 if [ "$DB" == "postgres" ]; then
