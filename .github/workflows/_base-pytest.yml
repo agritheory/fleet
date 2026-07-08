@@ -125,7 +125,7 @@ jobs:
         env:
           CI: true
         run: |
-          bench execute 'fleet.tests.setup.before_test'
+          bench --site test_site execute 'fleet.tests.setup.before_test'
 
       - name: Run Tests
         working-directory: /home/runner/frappe-bench
