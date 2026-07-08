@@ -21,13 +21,13 @@ env:
 
 jobs:
   tests:
-    name: ${ inputs.job-name }
+    name: ${{ inputs.job-name }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
     env:
-      DB: ${ inputs.db }
+      DB: ${{ inputs.db }}
       CI: 'Yes'
 
     services:
