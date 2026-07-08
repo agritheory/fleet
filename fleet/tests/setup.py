@@ -402,9 +402,7 @@ def create_employees(settings, employees):
 	if frappe.db.exists("Employment Type", "Full-time"):
 		frappe.rename_doc("Employment Type", "Full-time", "Full Time", force=True)
 
-	frappe.conf.throttle_user_limit = frappe.conf.user_type_doctype_limit[
-		"employee_self_service"
-	] = 1000
+	frappe.conf.throttle_user_limit = 1000
 	company_domain = frappe.get_value("Company", settings.company, "domain")
 	abbr = frappe.get_value("Company", settings.company, "abbr")
 
