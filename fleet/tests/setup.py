@@ -726,7 +726,7 @@ def create_items_and_assets(settings=None):
 		a.is_existing_asset = 1
 		a.cost_center = "Main - QCF"
 		a.purchase_date = a.available_for_use_date = doc.acquisition_date
-		a.gross_purchase_amount = doc.vehicle_value
+		a.net_purchase_amount = doc.vehicle_value
 		a.policy_number = doc.policy_no
 		a.insurer = doc.insurance_company
 		a.insurance_start_date = doc.start_date
